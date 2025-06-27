@@ -1,0 +1,198 @@
+layout: {zmk_keyboard: eyelash_corne}
+layers:
+  QWERTY:
+  - $$mdi:keyboard-tab$$
+  - Q
+  - W
+  - E
+  - R
+  - T
+  - $$mdi:arrow-up-bold$$
+  - Y
+  - U
+  - I
+  - O
+  - P
+  - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-shift$$
+  - A
+  - S
+  - D
+  - F
+  - G
+  - $$mdi:arrow-left-bold$$
+  - {t: '$$mdi:keyboard-return$$', type: enter}
+  - $$mdi:arrow-right-bold$$
+  - H
+  - J
+  - K
+  - L
+  - {t: ;, s: ':'}
+  - $$mdi:apple-keyboard-shift$$
+  - $$mdi:apple-keyboard-control$$
+  - Z
+  - X
+  - C
+  - V
+  - B
+  - $$mdi:keyboard-space$$
+  - $$mdi:arrow-down-bold$$
+  - N
+  - M
+  - {t: ',', s: <}
+  - {t: ., s: '>'}
+  - {t: /, s: '?'}
+  - $$mdi:apple-keyboard-control$$
+  - $$mdi:apple-keyboard-option$$
+  - SPEC
+  - $$mdi:keyboard-space$$
+  - {t: '$$mdi:keyboard-return$$', type: enter}
+  - $$mdi:apple-keyboard-command$$
+  - $$mdi:apple-keyboard-option$$
+  SPEC:
+  - {t: Sft+4, h: Sft+`}
+  - {t: Sft+7, h: '`'}
+  - '{'
+  - Sft+{
+  - Sft+}
+  - Sft+9
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '=', s: +}
+  - Sft+8
+  - Sft+0
+  - {t: Sft+=, s: Sft++}
+  - '}'
+  - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-shift$$
+  - '7'
+  - '5'
+  - '3'
+  - '1'
+  - '9'
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - '0'
+  - '2'
+  - '4'
+  - '6'
+  - {t: '8', h: .}
+  - $$mdi:apple-keyboard-shift$$
+  - $$mdi:apple-keyboard-control$$
+  - {t: '`', s: '~'}
+  - .
+  - {t: BTWN, h: toggle}
+  - PgDn
+  - PgUp
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - Sft+1
+  - Sft+3
+  - {t: /, s: '?'}
+  - Sft+2
+  - {t: \, s: '|'}
+  - {t: '-', s: _}
+  - PRINTSCREEN
+  - {type: held}
+  - $$mdi:keyboard-esc$$
+  - Ins
+  - $$mdi:backspace-reverse-outline$$
+  - $$mdi:apple-keyboard-option$$
+  DVP:
+  - $$mdi:keyboard-tab$$
+  - {t: ;, s: ':'}
+  - {t: ',', s: <}
+  - {t: ., s: '>'}
+  - P
+  - Y
+  - {t: '$$mdi:menu-up$$', s: '$$mdi:mouse$$'}
+  - F
+  - G
+  - C
+  - R
+  - L
+  - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-shift$$
+  - A
+  - O
+  - E
+  - U
+  - I
+  - {t: '$$mdi:menu-left$$', s: '$$mdi:mouse$$'}
+  - $$mdi:mouse-left-click-outline$$
+  - {t: '$$mdi:menu-right$$', s: '$$mdi:mouse$$'}
+  - D
+  - H
+  - T
+  - N
+  - S
+  - $$mdi:apple-keyboard-shift$$
+  - $$mdi:apple-keyboard-control$$
+  - .
+  - Q
+  - J
+  - K
+  - X
+  - $$mdi:volume-off$$
+  - {t: '$$mdi:menu-down$$', s: '$$mdi:mouse$$'}
+  - B
+  - M
+  - W
+  - V
+  - Z
+  - $$mdi:apple-keyboard-control$$
+  - $$mdi:apple-keyboard-option$$
+  - SPEC
+  - $$mdi:keyboard-space$$
+  - {t: '$$mdi:keyboard-return$$', type: enter}
+  - $$mdi:apple-keyboard-command$$
+  - $$mdi:apple-keyboard-option$$
+  BTWN:
+  - $$mdi:progress-download$$
+  - F1
+  - F2
+  - F3
+  - F4
+  - {h: '$$mdi:arrow-down-bold$$', s: '$$mdi:bluetooth-connect$$'}
+  - {t: '$$mdi:menu-up$$', s: '$$mdi:mouse$$'}
+  - $$mdi:bluetooth-off$$
+  - F7
+  - F8
+  - F9
+  - F10
+  - $$mdi:progress-download$$
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - $$mdi:mouse-left-click-outline$$
+  - $$mdi:mouse-scroll-wheel$$
+  - $$mdi:mouse-right-click-outline$$
+  - '&mkp MB4'
+  - {t: '$$mdi:menu-left$$', s: '$$mdi:mouse$$'}
+  - $$mdi:mouse-left-click-outline$$
+  - {t: '$$mdi:menu-right$$', s: '$$mdi:mouse$$'}
+  - $$mdi:progress-download$$
+  - $$mdi:mouse-left-click-outline$$
+  - $$mdi:mouse-scroll-wheel$$
+  - $$mdi:mouse-right-click-outline$$
+  - PRINTSCREEN
+  - F12
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:backup-restore$$', type: bootloader}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - '&to_qwerty'
+  - {t: '$$mdi:transfer$$', type: trans}
+  - '&mkp MB5'
+  - $$mdi:volume-off$$
+  - {t: '$$mdi:menu-down$$', s: '$$mdi:mouse$$'}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - $$mdi:progress-download$$
+  - {t: '$$mdi:backup-restore$$', type: bootloader}
+  - SCROLLLOCK
+  - PAUSE BREAK
+  - {t: '$$mdi:transfer$$', type: trans}
+  - '&to_dvp'
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
+  - {t: '$$mdi:transfer$$', type: trans}
