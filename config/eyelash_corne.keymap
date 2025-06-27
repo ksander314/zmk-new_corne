@@ -110,7 +110,7 @@
         };
 
         layer_3 {
-            display-name = "BTW";
+            display-name = "BTWN";
             bindings = <
 &bootloader  &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &bt BT_CLR       &kp F7     &kp F8       &kp F9      &kp F10          &bootloader
 &trans          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &bootloader  &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
