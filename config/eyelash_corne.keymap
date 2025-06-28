@@ -39,7 +39,7 @@
           compatible = "zmk,behavior-macro";
           #binding-cells = <0>;
           bindings = <
-            &to 2
+            &to 1
             &kp LG(SPACE)  // Win+Space → EN
           >;
         };
