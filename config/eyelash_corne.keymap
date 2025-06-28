@@ -77,7 +77,7 @@
 &kp TAB              &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y        &kp U  &kp I      &kp O    &kp P     &kp BSPC
 &kp LEFT_SHIFT       &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H        &kp J  &kp K      &kp L    &kp SEMI  &kp RIGHT_SHIFT
 &kp LCTRL            &kp Z  &kp X  &kp C     &kp V  &kp B        &trans                 &kp DOWN              &kp N        &kp M  &kp COMMA  &kp DOT  &kp FSLH  &kp RCTRL
-                         &kp LALT  &mo 1  &kp SPACE                                               &kp ENTER  &kp LEFT_GUI  &kp RALT
+                         &kp LALT  &mo 2  &kp SPACE                                               &kp ENTER  &kp LEFT_GUI  &kp RALT
             >;
 
              sensor-bindings = <&inc_dec_kp C_VOLUME_UP C_VOLUME_DOWN>;
@@ -91,7 +91,7 @@
 &kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &mmv MOVE_UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp BSPC
 &kp LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &kp RIGHT_SHIFT
 &kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &mmv MOVE_DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
-                                                 &kp LALT        &mo 1         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp RALT
+                                                 &kp LALT        &mo 2         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp RALT
             >;
 
             sensor-bindings = <&scroll_encoder>;
