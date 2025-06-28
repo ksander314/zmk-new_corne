@@ -85,18 +85,6 @@
            
         };
 
-        layer_2 {
-            display-name = "SPEC";
-            bindings = < 
-&mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACE  &kp LS(LEFT_BRACE)  &kp LS(RIGHT_BRACE)  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACE    &kp BSPC
-&kp LEFT_SHIFT              &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &kp RIGHT_SHIFT
-&kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp PAGE_UP       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
-                                                                    &kp PRINTSCREEN     &trans               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
-            >;
-
-            sensor-bindings = <&scroll_encoder>;
-        };
-
         layer_1 {
             display-name = "DVP";
             bindings = <
@@ -104,6 +92,18 @@
 &kp LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &kp RIGHT_SHIFT
 &kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &mmv MOVE_DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
                                                  &kp LALT        &mo 1         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp RALT
+            >;
+
+            sensor-bindings = <&scroll_encoder>;
+        };
+
+        layer_2 {
+            display-name = "SPEC";
+            bindings = < 
+&mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACE  &kp LS(LEFT_BRACE)  &kp LS(RIGHT_BRACE)  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACE    &kp BSPC
+&kp LEFT_SHIFT              &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &kp RIGHT_SHIFT
+&kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp PAGE_UP       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
+                                                                    &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
             >;
 
             sensor-bindings = <&scroll_encoder>;
