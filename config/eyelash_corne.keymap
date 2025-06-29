@@ -88,9 +88,9 @@
         layer_1 {
             display-name = "DVP";
             bindings = <
-&kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &mmv MOVE_UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp BSPC
-&kp LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &kp RIGHT_SHIFT
-&kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &mmv MOVE_DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
+&kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp BSPC
+&kp LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &kp RIGHT_SHIFT
+&kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &kp DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
                                                  &kp LALT        &mo 2         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp RALT
             >;
 
