@@ -113,7 +113,7 @@
             display-name = "BTWN";
             bindings = <
 &bootloader  &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &bt BT_CLR       &kp F7     &kp F8       &kp F9      &kp F10          &bootloader
-&trans          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &bootloader  &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
+&kp CAPS          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &bootloader  &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
 &trans          &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &bootloader  &sys_reset  &kp SCROLLLOCK   &kp PAUSE_BREAK
                                        &trans       &to_dvp     &trans                                                                   &trans       &trans     &trans
             >;
