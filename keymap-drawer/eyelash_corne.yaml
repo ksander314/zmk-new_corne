@@ -35,13 +35,62 @@ layers:
   - C
   - V
   - B
-  - $$mdi:keyboard-space$$
+  - {t: '$$mdi:transfer$$', type: trans}
   - $$mdi:arrow-down-bold$$
   - N
   - M
   - {t: ',', s: <}
   - {t: ., s: '>'}
   - {t: /, s: '?'}
+  - $$mdi:apple-keyboard-control$$
+  - $$mdi:apple-keyboard-option$$
+  - SPEC
+  - $$mdi:keyboard-space$$
+  - {t: '$$mdi:keyboard-return$$', type: enter}
+  - $$mdi:apple-keyboard-command$$
+  - $$mdi:apple-keyboard-option$$
+  DVP:
+  - $$mdi:keyboard-tab$$
+  - {t: ;, s: ':'}
+  - {t: ',', s: <}
+  - {t: ., s: '>'}
+  - P
+  - Y
+  - $$mdi:arrow-up-bold$$
+  - F
+  - G
+  - C
+  - R
+  - L
+  - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-shift$$
+  - A
+  - O
+  - E
+  - U
+  - I
+  - $$mdi:arrow-left-bold$$
+  - {t: '$$mdi:keyboard-return$$', type: enter}
+  - $$mdi:arrow-right-bold$$
+  - D
+  - H
+  - T
+  - N
+  - S
+  - $$mdi:apple-keyboard-shift$$
+  - $$mdi:apple-keyboard-control$$
+  - .
+  - Q
+  - J
+  - K
+  - X
+  - $$mdi:volume-off$$
+  - $$mdi:arrow-down-bold$$
+  - B
+  - M
+  - W
+  - V
+  - Z
   - $$mdi:apple-keyboard-control$$
   - $$mdi:apple-keyboard-option$$
   - SPEC
@@ -93,59 +142,10 @@ layers:
   - {t: \, s: '|'}
   - {t: '-', s: _}
   - PRINTSCREEN
-  - {type: held}
+  - {t: '$$mdi:minus-circle-outline$$', type: held}
   - $$mdi:keyboard-esc$$
   - Ins
   - $$mdi:backspace-reverse-outline$$
-  - $$mdi:apple-keyboard-option$$
-  DVP:
-  - $$mdi:keyboard-tab$$
-  - {t: ;, s: ':'}
-  - {t: ',', s: <}
-  - {t: ., s: '>'}
-  - P
-  - Y
-  - {t: '$$mdi:menu-up$$', s: '$$mdi:mouse$$'}
-  - F
-  - G
-  - C
-  - R
-  - L
-  - {t: '$$mdi:backspace$$', type: backspace}
-  - $$mdi:apple-keyboard-shift$$
-  - A
-  - O
-  - E
-  - U
-  - I
-  - {t: '$$mdi:menu-left$$', s: '$$mdi:mouse$$'}
-  - $$mdi:mouse-left-click-outline$$
-  - {t: '$$mdi:menu-right$$', s: '$$mdi:mouse$$'}
-  - D
-  - H
-  - T
-  - N
-  - S
-  - $$mdi:apple-keyboard-shift$$
-  - $$mdi:apple-keyboard-control$$
-  - .
-  - Q
-  - J
-  - K
-  - X
-  - $$mdi:volume-off$$
-  - {t: '$$mdi:menu-down$$', s: '$$mdi:mouse$$'}
-  - B
-  - M
-  - W
-  - V
-  - Z
-  - $$mdi:apple-keyboard-control$$
-  - $$mdi:apple-keyboard-option$$
-  - SPEC
-  - $$mdi:keyboard-space$$
-  - {t: '$$mdi:keyboard-return$$', type: enter}
-  - $$mdi:apple-keyboard-command$$
   - $$mdi:apple-keyboard-option$$
   BTWN:
   - $$mdi:progress-download$$
@@ -161,7 +161,7 @@ layers:
   - F9
   - F10
   - $$mdi:progress-download$$
-  - {t: '$$mdi:transfer$$', type: trans}
+  - $$mdi:apple-keyboard-caps$$
   - {t: '$$mdi:transfer$$', type: trans}
   - $$mdi:mouse-left-click-outline$$
   - $$mdi:mouse-scroll-wheel$$
