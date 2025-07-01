@@ -100,7 +100,7 @@
         layer_2 {
             display-name = "SPEC";
             bindings = < 
-&mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACE  &kp LS(LEFT_BRACE)  &kp LS(RIGHT_BRACE)  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACE    &kp BSPC
+&mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &kp BSPC
 &kp LEFT_SHIFT              &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &kp RIGHT_SHIFT
 &kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp PAGE_UP       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
                                                                     &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
