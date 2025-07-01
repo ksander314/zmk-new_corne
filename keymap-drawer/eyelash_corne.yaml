@@ -101,16 +101,16 @@ layers:
   SPEC:
   - {t: Sft+4, h: Sft+`}
   - {t: Sft+7, h: '`'}
+  - {t: '[', s: '{'}
   - '{'
-  - Sft+{
-  - Sft+}
+  - '}'
   - Sft+9
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '=', s: +}
   - Sft+8
   - Sft+0
   - {t: Sft+=, s: Sft++}
-  - '}'
+  - {t: ']', s: '}'}
   - {t: '$$mdi:backspace$$', type: backspace}
   - $$mdi:apple-keyboard-shift$$
   - '7'
