@@ -37,19 +37,23 @@
 
         to_dvp: to_dvp {
           compatible = "zmk,behavior-macro";
+          wait-ms = <30>;
+          tap-ms = <30>;
           #binding-cells = <0>;
           bindings = <
+            &kp LC(LS(LA(LG(N1))))  // Hyper+1 → Hammerspoon → set ABC
             &to 1
-            &kp LG(SPACE)  // Win+Space → EN
           >;
         };
-        
+
         to_qwerty: to_qwerty {
           compatible = "zmk,behavior-macro";
+          wait-ms = <30>;
+          tap-ms = <30>;
           #binding-cells = <0>;
           bindings = <
+            &kp LC(LS(LA(LG(N2))))  // Hyper+2 → Hammerspoon → set Russian
             &to 0
-            &kp LG(SPACE)  // Win+Space → RU
           >;
         };
     };
