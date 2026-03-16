@@ -31,13 +31,13 @@
 - **Layer 2 (SPEC)** — numbers and symbols, accessed via `MO(2)`
 - **Layer 3 (BTWN)** — F-keys, mouse, bluetooth, bootloader, accessed via `TO(3)` from SPEC layer
 
-### macOS input source switching
+### Input source switching
 
-Switching between DVP and QWERTY layers also switches macOS input source (ABC / Russian) via [Hammerspoon](https://www.hammerspoon.org/).
+ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2) when switching layers. The host OS intercepts these and sets the input source **idempotently** (not toggle).
 
-ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2). Hammerspoon intercepts these and calls `hs.keycodes.setLayout()` to set the input source **idempotently** (not toggle).
+#### macOS
 
-Hammerspoon config (`~/.hammerspoon/init.lua`):
+Install [Hammerspoon](https://www.hammerspoon.org/) (`brew install --cask hammerspoon`) and add to `~/.hammerspoon/init.lua`:
 
 ```lua
 require("hs.ipc")
@@ -52,6 +52,14 @@ hs.hotkey.bind(hyper, "2", function()
     hs.keycodes.setLayout("Russian – PC")
 end)
 ```
+
+#### Linux (GNOME)
+
+```bash
+./scripts/linux-setup.sh
+```
+
+Creates `~/.local/bin/kb-layout-{en,ru}.sh` and registers GNOME custom keybindings for `Hyper+1`/`Hyper+2` via `gsettings`.
 
 ### Flashing
 
