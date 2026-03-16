@@ -61,6 +61,12 @@ end)
 
 Creates `~/.local/bin/kb-layout-{en,ru}.sh` and registers GNOME custom keybindings for `Hyper+1`/`Hyper+2` via `gsettings`.
 
+### Display
+
+Uses a custom nice!view shield (`boards/shields/nice_view_custom/`) based on [nice-view-mod](https://github.com/GPeye/nice-view-mod). The right half (peripheral) shows the GNU Emacs logo instead of the default balloon/mountain art. The left half (central) shows the standard status screen (layer, battery, BT profile, WPM).
+
+To change the logo, replace `boards/shields/nice_view_custom/widgets/art.c` with a new 140x68 monochrome 1-bit LVGL image.
+
 ### Flashing
 
 Enter bootloader from layer 3 (BTWN): top-left key (left half) or top-right key (right half). Each half must be flashed separately.
