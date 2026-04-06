@@ -13,8 +13,8 @@ layers:
   - I
   - O
   - P
-  - {t: '$$mdi:backspace$$', type: backspace}
-  - $$mdi:apple-keyboard-shift$$
+  - {t: '''', s: '"'}
+  - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - A
   - S
   - D
@@ -28,7 +28,7 @@ layers:
   - K
   - L
   - {t: ;, s: ':'}
-  - $$mdi:apple-keyboard-shift$$
+  - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - $$mdi:apple-keyboard-control$$
   - Z
   - X
@@ -48,7 +48,7 @@ layers:
   - $$mdi:keyboard-space$$
   - {t: '$$mdi:keyboard-return$$', type: enter}
   - $$mdi:apple-keyboard-command$$
-  - $$mdi:apple-keyboard-option$$
+  - {t: '$$mdi:backspace$$', type: backspace}
   DVP:
   - $$mdi:keyboard-tab$$
   - {t: ;, s: ':'}
@@ -62,8 +62,8 @@ layers:
   - C
   - R
   - L
-  - {t: '$$mdi:backspace$$', type: backspace}
-  - $$mdi:apple-keyboard-shift$$
+  - {t: /, s: '?'}
+  - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - A
   - O
   - E
@@ -77,7 +77,7 @@ layers:
   - T
   - N
   - S
-  - $$mdi:apple-keyboard-shift$$
+  - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - $$mdi:apple-keyboard-control$$
   - .
   - Q
@@ -97,7 +97,7 @@ layers:
   - $$mdi:keyboard-space$$
   - {t: '$$mdi:keyboard-return$$', type: enter}
   - $$mdi:apple-keyboard-command$$
-  - $$mdi:apple-keyboard-option$$
+  - {t: '$$mdi:backspace$$', type: backspace}
   SPEC:
   - {t: Sft+4, h: Sft+`}
   - {t: Sft+7, h: '`'}
@@ -196,3 +196,25 @@ layers:
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
+combos:
+- p: [25, 26]
+  k: {h: '-', s: _}
+  l: [DVP]
+- p: [1, 14]
+  k: {h: '[', s: '{'}
+  l: [DVP]
+- p: [2, 15]
+  k: Sft+9
+  l: [DVP]
+- p: [3, 16]
+  k: '{'
+  l: [DVP]
+- p: [9, 24]
+  k: '}'
+  l: [DVP]
+- p: [8, 23]
+  k: Sft+0
+  l: [DVP]
+- p: [10, 25]
+  k: {h: ']', s: '}'}
+  l: [DVP]
