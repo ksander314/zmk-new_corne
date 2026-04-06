@@ -46,6 +46,22 @@
           >;
         };
 
+        td_bt_clr: td_bt_clr {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Double Tap BT Clear";
+            #binding-cells = <0>;
+            tapping-term-ms = <300>;
+            bindings = <&none>, <&bt BT_CLR>;
+        };
+
+        td_boot: td_boot {
+            compatible = "zmk,behavior-tap-dance";
+            display-name = "Double Tap Bootloader";
+            #binding-cells = <0>;
+            tapping-term-ms = <300>;
+            bindings = <&none>, <&bootloader>;
+        };
+
         to_qwerty: to_qwerty {
           compatible = "zmk,behavior-macro";
           wait-ms = <30>;
@@ -159,7 +175,7 @@
             bindings = < 
 &mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &kp BSPC
 &kp LEFT_SHIFT              &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &kp RIGHT_SHIFT
-&kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp PAGE_UP       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
+&kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp X       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
                                                                     &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
             >;
 
@@ -169,9 +185,9 @@
         layer_3 {
             display-name = "BTWN";
             bindings = <
-&bootloader  &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &bt BT_CLR       &kp F7     &kp F8       &kp F9      &kp F10          &bootloader
-&kp CAPS          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &bootloader  &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
-&trans          &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &bootloader  &sys_reset  &kp SCROLLLOCK   &kp PAUSE_BREAK
+&td_boot     &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &td_bt_clr       &kp F7     &kp F8       &kp F9      &kp F10          &td_boot
+&kp CAPS          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &td_boot     &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
+&trans          &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &td_boot     &sys_reset  &kp SCROLLLOCK   &kp PAUSE_BREAK
                                        &trans       &to_dvp     &trans                                                                   &trans       &trans     &trans
             >;
 
