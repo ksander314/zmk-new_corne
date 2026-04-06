@@ -132,7 +132,7 @@ layers:
   - .
   - {t: BTWN, h: toggle}
   - PgDn
-  - PgUp
+  - X
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
   - Sft+1
@@ -148,19 +148,19 @@ layers:
   - $$mdi:backspace-reverse-outline$$
   - $$mdi:apple-keyboard-option$$
   BTWN:
-  - $$mdi:progress-download$$
+  - '&td_boot'
   - F1
   - F2
   - F3
   - F4
   - {h: '$$mdi:arrow-down-bold$$', s: '$$mdi:bluetooth-connect$$'}
   - {t: '$$mdi:menu-up$$', s: '$$mdi:mouse$$'}
-  - $$mdi:bluetooth-off$$
+  - '&td_bt_clr'
   - F7
   - F8
   - F9
   - F10
-  - $$mdi:progress-download$$
+  - '&td_boot'
   - $$mdi:apple-keyboard-caps$$
   - {t: '$$mdi:transfer$$', type: trans}
   - $$mdi:mouse-left-click-outline$$
@@ -170,7 +170,7 @@ layers:
   - {t: '$$mdi:menu-left$$', s: '$$mdi:mouse$$'}
   - $$mdi:mouse-left-click-outline$$
   - {t: '$$mdi:menu-right$$', s: '$$mdi:mouse$$'}
-  - $$mdi:progress-download$$
+  - '&td_boot'
   - $$mdi:mouse-left-click-outline$$
   - $$mdi:mouse-scroll-wheel$$
   - $$mdi:mouse-right-click-outline$$
@@ -186,7 +186,7 @@ layers:
   - {t: '$$mdi:menu-down$$', s: '$$mdi:mouse$$'}
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
-  - $$mdi:progress-download$$
+  - '&td_boot'
   - {t: '$$mdi:backup-restore$$', type: bootloader}
   - SCROLLLOCK
   - PAUSE BREAK
