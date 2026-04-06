@@ -47,8 +47,8 @@ layers:
   - SPEC
   - $$mdi:keyboard-space$$
   - {t: '$$mdi:keyboard-return$$', type: enter}
-  - $$mdi:apple-keyboard-command$$
   - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-command$$
   DVP:
   - $$mdi:keyboard-tab$$
   - {t: ;, s: ':'}
@@ -96,8 +96,8 @@ layers:
   - SPEC
   - $$mdi:keyboard-space$$
   - {t: '$$mdi:keyboard-return$$', type: enter}
-  - $$mdi:apple-keyboard-command$$
   - {t: '$$mdi:backspace$$', type: backspace}
+  - $$mdi:apple-keyboard-command$$
   SPEC:
   - {t: Sft+4, h: Sft+`}
   - {t: Sft+7, h: '`'}
