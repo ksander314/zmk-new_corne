@@ -72,16 +72,69 @@
         tap-ms = <100>;
     };
 
+    combos {
+        compatible = "zmk,combos";
+
+        combo_minus {
+            timeout-ms = <50>;
+            key-positions = <25 26>;  // N + S on DVP home row (right ring + pinky) → minus/э
+            bindings = <&kp MINUS>;
+            layers = <1>;
+        };
+
+        combo_lbkt {
+            timeout-ms = <40>;
+            key-positions = <1 14>;   // ; + A (left pinky vertical) → [
+            bindings = <&kp LEFT_BRACKET>;
+            layers = <1>;
+        };
+
+        combo_lparen {
+            timeout-ms = <40>;
+            key-positions = <2 15>;   // , + O (left ring vertical) → (
+            bindings = <&kp LS(NUMBER_9)>;
+            layers = <1>;
+        };
+
+        combo_lbrace {
+            timeout-ms = <40>;
+            key-positions = <3 16>;   // . + E (left middle vertical) → {
+            bindings = <&kp LEFT_BRACE>;
+            layers = <1>;
+        };
+
+        combo_rbrace {
+            timeout-ms = <40>;
+            key-positions = <9 24>;   // C + T (right middle vertical) → }
+            bindings = <&kp RIGHT_BRACE>;
+            layers = <1>;
+        };
+
+        combo_rparen {
+            timeout-ms = <40>;
+            key-positions = <8 23>;   // G + H (right index vertical) → )
+            bindings = <&kp LS(NUMBER_0)>;
+            layers = <1>;
+        };
+
+        combo_rbkt {
+            timeout-ms = <40>;
+            key-positions = <10 25>;  // R + N (right ring vertical) → ]
+            bindings = <&kp RIGHT_BRACKET>;
+            layers = <1>;
+        };
+    };
+
     keymap {
         compatible = "zmk,keymap";
 
         layer_0 {
             display-name = "QWERTY";
             bindings = <
-&kp TAB              &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y        &kp U  &kp I      &kp O    &kp P     &kp BSPC
-&kp LEFT_SHIFT       &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H        &kp J  &kp K      &kp L    &kp SEMI  &kp RIGHT_SHIFT
+&kp TAB              &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y        &kp U  &kp I      &kp O    &kp P     &kp SQT
+&sk LEFT_SHIFT       &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H        &kp J  &kp K      &kp L    &kp SEMI  &sk RIGHT_SHIFT
 &kp LCTRL            &kp Z  &kp X  &kp C     &kp V  &kp B        &trans                 &kp DOWN              &kp N        &kp M  &kp COMMA  &kp DOT  &kp FSLH  &kp RCTRL
-                         &kp LALT  &mo 2  &kp SPACE                                               &kp ENTER  &kp LEFT_GUI  &kp RALT
+                         &kp LALT  &mo 2  &kp SPACE                                               &kp ENTER  &kp LEFT_GUI  &kp BSPC
             >;
 
              sensor-bindings = <&inc_dec_kp C_VOLUME_UP C_VOLUME_DOWN>;
@@ -92,10 +145,10 @@
         layer_1 {
             display-name = "DVP";
             bindings = <
-&kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp BSPC
-&kp LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &kp RIGHT_SHIFT
+&kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp FSLH
+&sk LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &sk RIGHT_SHIFT
 &kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &kp DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
-                                                 &kp LALT        &mo 2         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp RALT
+                                                 &kp LALT        &mo 2         &kp SPACE                                                             &kp ENTER        &kp LEFT_GUI     &kp BSPC
             >;
 
             sensor-bindings = <&scroll_encoder>;
