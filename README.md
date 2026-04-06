@@ -63,9 +63,47 @@ Creates `~/.local/bin/kb-layout-{en,ru}.sh` and registers GNOME custom keybindin
 
 ### Display
 
-Uses a custom nice!view shield (`boards/shields/nice_view_custom/`) based on [nice-view-mod](https://github.com/GPeye/nice-view-mod). The right half (peripheral) shows the GNU Emacs logo instead of the default balloon/mountain art. The left half (central) shows the standard status screen (layer, battery, BT profile, WPM).
+Uses a custom nice!view shield (`boards/shields/nice_view_custom/`) based on [nice-view-mod](https://github.com/GPeye/nice-view-mod). The right half (peripheral) shows Go Gopher + GNU Emacs logo. The left half (central) shows the standard status screen (layer, battery, BT profile, WPM).
 
-To change the logo, replace `boards/shields/nice_view_custom/widgets/art.c` with a new 140x68 monochrome 1-bit LVGL image.
+#### Changing the display art
+
+The nice!view is a 160x68 monochrome display mounted vertically. Images are stored as 140x68 LVGL arrays — the display driver handles rotation.
+
+To replace the art:
+
+1. Prepare your image in **portrait** orientation (68x140 px, black & white PNG)
+2. Rotate it **90° clockwise** → you get a 140x68 landscape image
+3. Convert to LVGL 1-bit indexed C array (ZMK v0.3 uses LVGL v8, format `LV_IMG_CF_INDEXED_1BIT`)
+4. Replace `boards/shields/nice_view_custom/widgets/art.c`
+
+Example using Python (requires Pillow):
+
+```python
+from PIL import Image
+
+# 1. Load your portrait image (68x140)
+img = Image.open("my_art_portrait.png").convert("1")
+
+# 2. Rotate CW for the display driver
+img = img.rotate(-90, expand=True)  # now 140x68
+
+# 3. Convert to C array
+W, H = img.size
+bytes_per_row = (W + 7) // 8
+pixel_data = []
+for y in range(H):
+    for byte_idx in range(bytes_per_row):
+        byte_val = 0
+        for bit in range(8):
+            x = byte_idx * 8 + bit
+            if x < W and img.getpixel((x, y)):
+                byte_val |= (1 << (7 - bit))
+        pixel_data.append(byte_val)
+
+# 4. Write art.c (see existing file for full template with palette + lv_img_dsc_t)
+```
+
+The palette in `art.c` controls colors. Swap the two palette entries to invert black/white on the display.
 
 ### Flashing
 
