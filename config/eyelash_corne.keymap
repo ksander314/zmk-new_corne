@@ -84,15 +84,8 @@
 
         combo_lbkt {
             timeout-ms = <40>;
-            key-positions = <1 14>;   // ; + A (left pinky vertical) → [
+            key-positions = <2 15>;   // , + O (left ring vertical) → [
             bindings = <&kp LEFT_BRACKET>;
-            layers = <1>;
-        };
-
-        combo_lparen {
-            timeout-ms = <40>;
-            key-positions = <2 15>;   // , + O (left ring vertical) → (
-            bindings = <&kp LS(NUMBER_9)>;
             layers = <1>;
         };
 
@@ -105,21 +98,28 @@
 
         combo_rbrace {
             timeout-ms = <40>;
-            key-positions = <9 24>;   // C + T (right middle vertical) → }
+            key-positions = <4 17>;   // P + U (left index vertical) → }
             bindings = <&kp RIGHT_BRACE>;
+            layers = <1>;
+        };
+
+        combo_lparen {
+            timeout-ms = <40>;
+            key-positions = <5 18>;   // Y + I (left index-stretch vertical) → (
+            bindings = <&kp LS(NUMBER_9)>;
             layers = <1>;
         };
 
         combo_rparen {
             timeout-ms = <40>;
-            key-positions = <8 23>;   // G + H (right index vertical) → )
+            key-positions = <9 24>;   // C + T (right middle vertical) → )
             bindings = <&kp LS(NUMBER_0)>;
             layers = <1>;
         };
 
         combo_rbkt {
             timeout-ms = <40>;
-            key-positions = <10 25>;  // R + N (right ring vertical) → ]
+            key-positions = <11 26>;  // L + S (right pinky vertical) → ]
             bindings = <&kp RIGHT_BRACKET>;
             layers = <1>;
         };
