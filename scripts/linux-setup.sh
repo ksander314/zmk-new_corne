@@ -7,15 +7,29 @@ set -euo pipefail
 SCRIPTS_DIR="$HOME/.local/bin"
 mkdir -p "$SCRIPTS_DIR"
 
-# Create switching scripts
+# Create switching scripts. Look up the input-source index by xkb-id at
+# runtime, so reordering or adding sources in GNOME Settings doesn't
+# silently switch you to the wrong layout.
 cat > "$SCRIPTS_DIR/kb-layout-en.sh" << 'EOF'
 #!/bin/bash
-gsettings set org.gnome.desktop.input-sources current 0
+candidates='us en'
+idx=$(gsettings get org.gnome.desktop.input-sources sources \
+  | python3 -c 'import ast, sys; srcs = ast.literal_eval(sys.stdin.read().strip()); cands = set(sys.argv[1].split()); print(next(i for i, (_, n) in enumerate(srcs) if n in cands))' "$candidates") || {
+    echo "no input source matching {$candidates} in GNOME input-sources" >&2
+    exit 1
+}
+gsettings set org.gnome.desktop.input-sources current "$idx"
 EOF
 
 cat > "$SCRIPTS_DIR/kb-layout-ru.sh" << 'EOF'
 #!/bin/bash
-gsettings set org.gnome.desktop.input-sources current 1
+candidates='ru'
+idx=$(gsettings get org.gnome.desktop.input-sources sources \
+  | python3 -c 'import ast, sys; srcs = ast.literal_eval(sys.stdin.read().strip()); cands = set(sys.argv[1].split()); print(next(i for i, (_, n) in enumerate(srcs) if n in cands))' "$candidates") || {
+    echo "no input source matching {$candidates} in GNOME input-sources" >&2
+    exit 1
+}
+gsettings set org.gnome.desktop.input-sources current "$idx"
 EOF
 
 chmod +x "$SCRIPTS_DIR/kb-layout-en.sh" "$SCRIPTS_DIR/kb-layout-ru.sh"
@@ -55,7 +69,7 @@ gsettings set "${CUSTOM_SCHEMA}:${KEY_PATH}/zmk-ru/" name "ZMK: Switch to Russia
 gsettings set "${CUSTOM_SCHEMA}:${KEY_PATH}/zmk-ru/" command "$SCRIPTS_DIR/kb-layout-ru.sh"
 gsettings set "${CUSTOM_SCHEMA}:${KEY_PATH}/zmk-ru/" binding "<Ctrl><Shift><Alt><Super>2"
 
-echo "Done. Make sure GNOME input sources are configured:"
+echo "Done. Layout switching looks up xkb-ids by name (English: 'us' or 'en'; Russian: 'ru')."
+echo "Order in input-sources no longer matters, but matching sources must be enabled:"
 echo "  gsettings get org.gnome.desktop.input-sources sources"
-echo "  Expected: [('xkb', 'us'), ('xkb', 'ru')]"
-echo "  To set:   gsettings set org.gnome.desktop.input-sources sources \"[('xkb', 'us'), ('xkb', 'ru')]\""
+echo "  To enable: gsettings set org.gnome.desktop.input-sources sources \"[('xkb', 'us'), ('xkb', 'ru')]\""
