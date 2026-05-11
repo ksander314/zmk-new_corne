@@ -55,6 +55,14 @@ end)
 
 #### Linux (GNOME)
 
+First enable the layouts in GNOME (any order):
+
+```sh
+gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('xkb', 'ru')]"
+```
+
+Then run:
+
 ```bash
 ./scripts/linux-setup.sh
 ```
