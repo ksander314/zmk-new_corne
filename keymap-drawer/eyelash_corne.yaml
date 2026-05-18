@@ -212,6 +212,9 @@ combos:
 - p: [10, 25]
   k: {t: '''', s: '"'}
   l: [QWERTY, DVP]
+- p: [29, 30]
+  k: {t: '$$mdi:apple-keyboard-command$$', h: '$$mdi:gesture-tap-hold$$'}
+  l: [QWERTY, DVP]
 - p: [2, 15]
   k: {h: '[', s: '{'}
   l: [DVP]
