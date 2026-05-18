@@ -27,7 +27,7 @@
 };
 
 &mt {
-    flavor = "tap-preferred";
+    flavor = "balanced";
     tapping-term-ms = <175>;
     quick-tap-ms = <150>;
 };
@@ -129,6 +129,13 @@
             timeout-ms = <40>;
             key-positions = <10 25>;  // O + L vertical (right ring column) → '
             bindings = <&kp SQT>;
+            layers = <0 1>;
+        };
+
+        combo_lgui {
+            timeout-ms = <40>;
+            key-positions = <29 30>;  // Z + X bottom-left (QWERTY) / APOS + Q (DVP) → sticky LGUI
+            bindings = <&sk LEFT_GUI>;
             layers = <0 1>;
         };
 
