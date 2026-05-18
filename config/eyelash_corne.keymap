@@ -26,6 +26,12 @@
     trigger-period-ms = <16>;
 };
 
+&mt {
+    flavor = "tap-preferred";
+    tapping-term-ms = <175>;
+    quick-tap-ms = <150>;
+};
+
 / {
     behaviors {
         td0: td0 {
@@ -95,7 +101,35 @@
             timeout-ms = <50>;
             key-positions = <25 26>;  // N + S on DVP home row (right ring + pinky) → minus/э
             bindings = <&kp MINUS>;
-            layers = <1>;
+            layers = <0 1 2>;
+        };
+
+        combo_lshift {
+            timeout-ms = <30>;
+            key-positions = <14 15>;  // A + S home (left pinky + ring) → sticky LSHIFT
+            bindings = <&sk LEFT_SHIFT>;
+            layers = <0 1>;
+        };
+
+        combo_rshift {
+            timeout-ms = <30>;
+            key-positions = <24 25>;  // K + L home (right middle + ring) → sticky RSHIFT
+            bindings = <&sk RIGHT_SHIFT>;
+            layers = <0 1>;
+        };
+
+        combo_tab {
+            timeout-ms = <40>;
+            key-positions = <1 2>;    // Q + W top (left pinky + ring) → TAB
+            bindings = <&kp TAB>;
+            layers = <0 1>;
+        };
+
+        combo_apos {
+            timeout-ms = <40>;
+            key-positions = <10 25>;  // O + L vertical (right ring column) → '
+            bindings = <&kp SQT>;
+            layers = <0 1>;
         };
 
         combo_lbkt {
@@ -147,10 +181,10 @@
         layer_0 {
             display-name = "QWERTY";
             bindings = <
-&kp TAB              &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y        &kp U  &kp I      &kp O    &kp P     &kp SQT
-&sk LEFT_SHIFT       &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H        &kp J  &kp K      &kp L    &kp SEMI  &sk RIGHT_SHIFT
-&kp LCTRL            &kp Z  &kp X  &kp C     &kp V  &kp B        &trans                 &kp DOWN              &kp N        &kp M  &kp COMMA  &kp DOT  &kp FSLH  &kp RCTRL
-                         &kp LALT  &mo 2  &kp SPACE                                               &kp ENTER  &kp BSPC  &kp LEFT_GUI
+&none                &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y              &kp U     &kp I      &kp O    &kp P     &none
+&none                &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H              &kp J     &kp K      &kp L    &kp SEMI  &none
+&none                &kp Z  &kp X  &kp C     &kp V  &kp B        &trans                 &kp DOWN              &kp N              &kp M     &kp COMMA  &kp DOT  &kp FSLH  &none
+                         &kp LALT  &mo 2  &mt LCTRL SPACE                                                  &mt RCTRL ENTER  &kp BSPC  &kp LEFT_GUI
             >;
 
              sensor-bindings = <&inc_dec_kp C_VOLUME_UP C_VOLUME_DOWN>;
@@ -161,10 +195,10 @@
         layer_1 {
             display-name = "DVP";
             bindings = <
-&kp TAB         &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &kp FSLH
-&sk LEFT_SHIFT  &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &sk RIGHT_SHIFT
-&kp LCTRL       &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &kp DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &kp RCTRL
-                                                 &kp LALT        &mo 2         &kp SPACE                                                             &kp ENTER        &kp BSPC     &kp LEFT_GUI
+&none           &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &none
+&none           &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &none
+&none           &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &kp DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &none
+                                                 &kp LALT        &mo 2         &mt LCTRL SPACE                                                       &mt RCTRL ENTER  &kp BSPC     &kp LEFT_GUI
             >;
 
             sensor-bindings = <&scroll_encoder>;
@@ -172,10 +206,10 @@
 
         layer_2 {
             display-name = "SPEC";
-            bindings = < 
-&mt LS(GRAVE) LS(NUMBER_4)  &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &kp BSPC
-&kp LEFT_SHIFT              &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &kp RIGHT_SHIFT
-&kp LCTRL                   &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp X       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &kp MINUS
+            bindings = <
+&none                       &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &none
+&none                       &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &none
+&none                       &kp GRAVE               &kp APOS        &to 3               &kp PAGE_DOWN        &kp X       &trans  &trans          &kp LS(NUMBER_1)  &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &none
                                                                     &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
             >;
 
@@ -185,10 +219,10 @@
         layer_3 {
             display-name = "BTWN";
             bindings = <
-&td_boot     &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &td_bt_clr       &kp F7     &kp F8       &kp F9      &kp F10          &td_boot
-&kp CAPS          &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &td_boot     &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &kp F12
-&trans          &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &td_boot     &sys_reset  &kp SCROLLLOCK   &kp PAUSE_BREAK
-                                       &trans       &to_dvp     &trans                                                                   &trans       &trans     &trans
+&none        &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &td_bt_clr       &kp F7     &kp F8       &kp F9      &kp F10          &none
+&none        &trans      &mkp LCLK  &mkp MCLK    &mkp RCLK  &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &td_boot     &mkp LCLK  &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &none
+&none        &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &td_boot     &sys_reset  &kp SCROLLLOCK   &none
+                                    &trans       &to_dvp     &trans                                                                   &trans       &trans     &trans
             >;
 
             sensor-bindings = <&scroll_encoder>;
