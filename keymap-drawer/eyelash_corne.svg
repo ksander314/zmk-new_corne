@@ -548,9 +548,9 @@ rect.held, rect.combo.held {
 <text x="868" y="87" class="combo shifted">_</text>
 </g>
 <g class="combo combopos-1">
-<rect rx="6" ry="6" x="98" y="85" width="28" height="26" class="combo"/>
-<use href="#mdi:apple-keyboard-shift" xlink:href="#mdi:apple-keyboard-shift" x="103" y="89" height="18" width="18.0" class="combo tap glyph mdi:apple-keyboard-shift"/>
-<use href="#mdi:gesture-tap-hold" xlink:href="#mdi:gesture-tap-hold" x="104" y="94" height="15" width="15.0" class="combo hold glyph mdi:gesture-tap-hold"/>
+<rect rx="6" ry="6" x="154" y="74" width="28" height="26" class="combo"/>
+<use href="#mdi:apple-keyboard-shift" xlink:href="#mdi:apple-keyboard-shift" x="159" y="78" height="18" width="18.0" class="combo tap glyph mdi:apple-keyboard-shift"/>
+<use href="#mdi:gesture-tap-hold" xlink:href="#mdi:gesture-tap-hold" x="160" y="83" height="15" width="15.0" class="combo hold glyph mdi:gesture-tap-hold"/>
 </g>
 <g class="combo combopos-2">
 <rect rx="6" ry="6" x="798" y="74" width="28" height="26" class="combo"/>
@@ -852,9 +852,9 @@ rect.held, rect.combo.held {
 <text x="868" y="87" class="combo shifted">_</text>
 </g>
 <g class="combo combopos-1">
-<rect rx="6" ry="6" x="98" y="85" width="28" height="26" class="combo"/>
-<use href="#mdi:apple-keyboard-shift" xlink:href="#mdi:apple-keyboard-shift" x="103" y="89" height="18" width="18.0" class="combo tap glyph mdi:apple-keyboard-shift"/>
-<use href="#mdi:gesture-tap-hold" xlink:href="#mdi:gesture-tap-hold" x="104" y="94" height="15" width="15.0" class="combo hold glyph mdi:gesture-tap-hold"/>
+<rect rx="6" ry="6" x="154" y="74" width="28" height="26" class="combo"/>
+<use href="#mdi:apple-keyboard-shift" xlink:href="#mdi:apple-keyboard-shift" x="159" y="78" height="18" width="18.0" class="combo tap glyph mdi:apple-keyboard-shift"/>
+<use href="#mdi:gesture-tap-hold" xlink:href="#mdi:gesture-tap-hold" x="160" y="83" height="15" width="15.0" class="combo hold glyph mdi:gesture-tap-hold"/>
 </g>
 <g class="combo combopos-2">
 <rect rx="6" ry="6" x="798" y="74" width="28" height="26" class="combo"/>

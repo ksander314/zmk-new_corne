@@ -200,7 +200,7 @@ combos:
 - p: [25, 26]
   k: {h: '-', s: _}
   l: [QWERTY, DVP, SPEC]
-- p: [14, 15]
+- p: [15, 16]
   k: {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   l: [QWERTY, DVP]
 - p: [24, 25]
