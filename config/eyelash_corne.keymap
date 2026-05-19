@@ -139,6 +139,20 @@
             layers = <0 1>;
         };
 
+        combo_qmark {
+            timeout-ms = <40>;
+            key-positions = <17 22>;  // F + J home (index both hands) → Shift+/ = ? in EN, , in RU
+            bindings = <&kp LS(FSLH)>;
+            layers = <0 1>;
+        };
+
+        combo_caret {
+            timeout-ms = <40>;
+            key-positions = <16 24>;  // D + K home (middle both hands) → Shift+6 = ^ in EN
+            bindings = <&kp LS(NUMBER_6)>;
+            layers = <0 1>;
+        };
+
         combo_lbkt {
             timeout-ms = <40>;
             key-positions = <2 15>;   // , + O (left ring vertical) → [
