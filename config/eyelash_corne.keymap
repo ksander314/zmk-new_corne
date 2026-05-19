@@ -160,6 +160,13 @@
             layers = <0 1>;
         };
 
+        combo_tilde {
+            timeout-ms = <40>;
+            key-positions = <3 9>;    // E + I top row (left middle + right ring) → ~ in EN, Ё in RU
+            bindings = <&kp LS(GRAVE)>;
+            layers = <0 1>;
+        };
+
         combo_lbkt {
             timeout-ms = <40>;
             key-positions = <2 15>;   // , + O (left ring vertical) → [
