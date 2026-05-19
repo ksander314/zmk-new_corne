@@ -170,8 +170,8 @@ layers:
   - {t: '$$mdi:menu-left$$', s: '$$mdi:mouse$$'}
   - $$mdi:mouse-left-click-outline$$
   - {t: '$$mdi:menu-right$$', s: '$$mdi:mouse$$'}
-  - '&td_boot'
   - $$mdi:mouse-left-click-outline$$
+  - '&td_boot'
   - $$mdi:mouse-scroll-wheel$$
   - $$mdi:mouse-right-click-outline$$
   - PRINTSCREEN
@@ -215,7 +215,7 @@ combos:
 - p: [29, 30]
   k: {t: '$$mdi:apple-keyboard-command$$', h: '$$mdi:gesture-tap-hold$$'}
   l: [QWERTY, DVP]
-- p: [17, 22]
+- p: [17, 23]
   k: Sft+/
   l: [QWERTY, DVP]
 - p: [16, 24]
