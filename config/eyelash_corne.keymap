@@ -106,7 +106,7 @@
 
         combo_lshift {
             timeout-ms = <30>;
-            key-positions = <14 15>;  // A + S home (left pinky + ring) → sticky LSHIFT
+            key-positions = <15 16>;  // S + D home (left ring + middle) → sticky LSHIFT, mirrors combo_rshift
             bindings = <&sk LEFT_SHIFT>;
             layers = <0 1>;
         };
