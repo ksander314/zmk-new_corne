@@ -153,6 +153,13 @@
             layers = <0 1>;
         };
 
+        combo_caps_word {
+            timeout-ms = <40>;
+            key-positions = <33 36>;  // B + N bottom-inner-index → caps_word (auto-off on space)
+            bindings = <&caps_word>;
+            layers = <0 1>;
+        };
+
         combo_lbkt {
             timeout-ms = <40>;
             key-positions = <2 15>;   // , + O (left ring vertical) → [
