@@ -224,6 +224,9 @@ combos:
 - p: [33, 36]
   k: $$mdi:alpha-w-box$$
   l: [QWERTY, DVP]
+- p: [3, 9]
+  k: Sft+`
+  l: [QWERTY, DVP]
 - p: [2, 15]
   k: {h: '[', s: '{'}
   l: [DVP]
