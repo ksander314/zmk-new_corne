@@ -218,10 +218,10 @@ combos:
 - p: [17, 23]
   k: Sft+/
   l: [QWERTY]
-- p: [14, 26]
+- p: [15, 25]
   k: Sft+/
   l: [DVP]
-- p: [14, 26]
+- p: [15, 25]
   k: Sft+7
   l: [QWERTY]
 - p: [18, 22]
