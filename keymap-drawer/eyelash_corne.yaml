@@ -209,6 +209,9 @@ combos:
 - p: [5, 7]
   k: Sft+8
   l: [QWERTY, DVP]
+- p: [1, 11]
+  k: Sft+4
+  l: [DVP]
 - p: [14, 26]
   k: Sft+1
   l: [QWERTY, DVP]
