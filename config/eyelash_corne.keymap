@@ -148,14 +148,14 @@
 
         combo_question_en {
             timeout-ms = <40>;
-            key-positions = <14 26>;  // A + ; home (pinky mirror) → LS(FSLH) → ? on EN
+            key-positions = <15 25>;  // S + L home (ring mirror) → LS(FSLH) → ? on EN
             bindings = <&kp LS(FSLH)>;
             layers = <1>;
         };
 
         combo_question_ru {
             timeout-ms = <40>;
-            key-positions = <14 26>;  // A + ; home (pinky mirror) → LS(NUMBER_7) → ? on Russian Mac
+            key-positions = <15 25>;  // S + L home (ring mirror) → LS(NUMBER_7) → ? on Russian Mac
             bindings = <&kp LS(NUMBER_7)>;
             layers = <0>;
         };
