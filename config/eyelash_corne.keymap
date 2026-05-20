@@ -125,13 +125,6 @@
             layers = <0 1>;
         };
 
-        combo_apos {
-            timeout-ms = <40>;
-            key-positions = <10 25>;  // O + L vertical (right ring column) → '
-            bindings = <&kp SQT>;
-            layers = <0 1>;
-        };
-
         combo_lgui {
             timeout-ms = <40>;
             key-positions = <29 30>;  // Z + X bottom-left (QWERTY) / APOS + Q (DVP) → sticky LGUI
@@ -179,13 +172,6 @@
             key-positions = <18 22>;  // G + H home (inner index mirror) → LS(NUMBER_6) → : on Russian Mac
             bindings = <&kp LS(NUMBER_6)>;
             layers = <0>;
-        };
-
-        combo_caret {
-            timeout-ms = <40>;
-            key-positions = <16 24>;  // D + K home (middle both hands) → Shift+6 = ^ in EN
-            bindings = <&kp LS(NUMBER_6)>;
-            layers = <0 1>;
         };
 
         combo_caps_word {
@@ -278,8 +264,8 @@
             display-name = "SPEC";
             bindings = <
 &none                       &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &none
-&none                       &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &none
-&none                       &kp GRAVE               &kp TAB         &to 3               &kp PAGE_DOWN        &sk LEFT_SHIFT  &trans  &trans          &sk RIGHT_SHIFT   &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &none
+&none                       &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &trans  &trans  &trans  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &kp APOS           &none
+&none                       &kp NUMBER_8            &kp TAB         &to 3               &kp PAGE_DOWN        &sk LEFT_SHIFT  &trans  &trans          &sk RIGHT_SHIFT   &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &none
                                                                     &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
             >;
 
