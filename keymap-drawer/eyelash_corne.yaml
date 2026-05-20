@@ -125,10 +125,10 @@ layers:
   - '2'
   - '4'
   - '6'
-  - {t: '8', h: .}
+  - .
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: '$$mdi:minus-circle-outline$$', type: none}
-  - {t: '`', s: '~'}
+  - '8'
   - $$mdi:keyboard-tab$$
   - {t: BTWN, h: toggle}
   - PgDn
@@ -209,9 +209,6 @@ combos:
 - p: [1, 2]
   k: $$mdi:keyboard-tab$$
   l: [QWERTY, DVP]
-- p: [10, 25]
-  k: {t: '''', s: '"'}
-  l: [QWERTY, DVP]
 - p: [29, 30]
   k: {t: '$$mdi:apple-keyboard-command$$', h: '$$mdi:gesture-tap-hold$$'}
   l: [QWERTY, DVP]
@@ -233,9 +230,6 @@ combos:
 - p: [18, 22]
   k: Sft+6
   l: [QWERTY]
-- p: [16, 24]
-  k: Sft+6
-  l: [QWERTY, DVP]
 - p: [33, 36]
   k: $$mdi:alpha-w-box$$
   l: [QWERTY, DVP]
