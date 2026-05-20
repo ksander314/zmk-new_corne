@@ -257,7 +257,7 @@
 &none        &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &td_bt_clr       &kp F7     &kp F8       &kp F9      &kp F10          &none
 &none        &trans      &mkp LCLK  &mkp MCLK    &td_boot   &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &mkp LCLK    &td_boot   &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &none
 &none        &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &trans       &sys_reset  &kp SCROLLLOCK   &none
-                                    &trans       &to_dvp     &trans                                                                   &trans       &trans     &trans
+                                    &trans       &trans      &to_dvp                                                                  &trans       &trans     &trans
             >;
 
             sensor-bindings = <&scroll_encoder>;
