@@ -45,7 +45,7 @@ layers:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - $$mdi:apple-keyboard-option$$
   - {t: '$$mdi:keyboard-space$$', h: '$$mdi:apple-keyboard-control$$'}
-  - SPEC
+  - {t: '$$mdi:keyboard-esc$$', h: SPEC}
   - {t: '$$mdi:backspace$$', type: backspace}
   - {t: '$$mdi:keyboard-return$$', h: '$$mdi:apple-keyboard-control$$'}
   - $$mdi:apple-keyboard-command$$
@@ -94,7 +94,7 @@ layers:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - $$mdi:apple-keyboard-option$$
   - {t: '$$mdi:keyboard-space$$', h: '$$mdi:apple-keyboard-control$$'}
-  - SPEC
+  - {t: '$$mdi:keyboard-esc$$', h: SPEC}
   - {t: '$$mdi:backspace$$', type: backspace}
   - {t: '$$mdi:keyboard-return$$', h: '$$mdi:apple-keyboard-control$$'}
   - $$mdi:apple-keyboard-command$$
@@ -216,8 +216,23 @@ combos:
   k: {t: '$$mdi:apple-keyboard-command$$', h: '$$mdi:gesture-tap-hold$$'}
   l: [QWERTY, DVP]
 - p: [17, 23]
+  k: {t: ',', s: <}
+  l: [DVP]
+- p: [17, 23]
   k: Sft+/
-  l: [QWERTY, DVP]
+  l: [QWERTY]
+- p: [14, 26]
+  k: Sft+/
+  l: [DVP]
+- p: [14, 26]
+  k: Sft+7
+  l: [QWERTY]
+- p: [18, 22]
+  k: Sft+;
+  l: [DVP]
+- p: [18, 22]
+  k: Sft+6
+  l: [QWERTY]
 - p: [16, 24]
   k: Sft+6
   l: [QWERTY, DVP]
