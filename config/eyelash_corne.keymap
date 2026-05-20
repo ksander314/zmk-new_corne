@@ -32,6 +32,12 @@
     quick-tap-ms = <150>;
 };
 
+&lt {
+    flavor = "hold-preferred";
+    tapping-term-ms = <200>;
+    quick-tap-ms = <150>;
+};
+
 / {
     behaviors {
         td0: td0 {
