@@ -99,9 +99,37 @@
 
         combo_minus {
             timeout-ms = <50>;
-            key-positions = <25 26>;  // N + S on DVP home row (right ring + pinky) → minus/э
+            key-positions = <25 26>;  // L + ; home (right ring + pinky) → MINUS (kept as backup)
             bindings = <&kp MINUS>;
             layers = <0 1 2>;
+        };
+
+        combo_minus_top {
+            timeout-ms = <40>;
+            key-positions = <4 8>;    // R + U top (index mirror, above F+J = ,) → MINUS
+            bindings = <&kp MINUS>;
+            layers = <0 1 2>;
+        };
+
+        combo_exclamation {
+            timeout-ms = <40>;
+            key-positions = <14 26>;  // A + ; home (pinky mirror) → ! (LS(N1) same in EN and RU)
+            bindings = <&kp LS(NUMBER_1)>;
+            layers = <0 1>;
+        };
+
+        combo_dquote_en {
+            timeout-ms = <40>;
+            key-positions = <16 24>;  // D + K home (middle mirror) → LS(SQT) → " on EN
+            bindings = <&kp LS(SQT)>;
+            layers = <1>;
+        };
+
+        combo_dquote_ru {
+            timeout-ms = <40>;
+            key-positions = <16 24>;  // D + K home (middle mirror) → LS(NUMBER_2) → " on Russian Mac
+            bindings = <&kp LS(NUMBER_2)>;
+            layers = <0>;
         };
 
         combo_lshift {
