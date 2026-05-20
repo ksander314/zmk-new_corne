@@ -125,6 +125,13 @@
             layers = <0 1>;
         };
 
+        combo_dollar {
+            timeout-ms = <40>;
+            key-positions = <1 11>;   // Q + P top (pinky mirror) → LS(N4) → $ (EN only; in RU same scan code gives ;)
+            bindings = <&kp LS(NUMBER_4)>;
+            layers = <1>;
+        };
+
         combo_exclamation {
             timeout-ms = <40>;
             key-positions = <14 26>;  // A + ; home (pinky mirror) → ! (LS(N1) same in EN and RU)
