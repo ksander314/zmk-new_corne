@@ -203,6 +203,12 @@ combos:
 - p: [4, 8]
   k: {t: '-', s: _}
   l: [QWERTY, DVP, SPEC]
+- p: [2, 10]
+  k: Sft+-
+  l: [QWERTY, DVP]
+- p: [5, 7]
+  k: Sft+8
+  l: [QWERTY, DVP]
 - p: [14, 26]
   k: Sft+1
   l: [QWERTY, DVP]
