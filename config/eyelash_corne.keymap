@@ -111,6 +111,20 @@
             layers = <0 1 2>;
         };
 
+        combo_underscore {
+            timeout-ms = <40>;
+            key-positions = <2 10>;   // W + O top (ring mirror) → LS(MINUS) → _ (same in EN and RU)
+            bindings = <&kp LS(MINUS)>;
+            layers = <0 1>;
+        };
+
+        combo_asterisk {
+            timeout-ms = <40>;
+            key-positions = <5 7>;    // T + Y top (inner index mirror) → LS(N8) → * (same in EN and RU)
+            bindings = <&kp LS(NUMBER_8)>;
+            layers = <0 1>;
+        };
+
         combo_exclamation {
             timeout-ms = <40>;
             key-positions = <14 26>;  // A + ; home (pinky mirror) → ! (LS(N1) same in EN and RU)
