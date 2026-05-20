@@ -125,10 +125,10 @@ layers:
   - '2'
   - '4'
   - '6'
-  - .
+  - {t: '8', h: .}
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: '$$mdi:minus-circle-outline$$', type: none}
-  - '8'
+  - {t: '`', s: '~'}
   - $$mdi:keyboard-tab$$
   - {t: BTWN, h: toggle}
   - PgDn
