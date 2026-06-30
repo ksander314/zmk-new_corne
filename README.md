@@ -55,7 +55,15 @@ end)
 
 #### Linux (GNOME)
 
-First enable the layouts in GNOME (any order):
+On GNOME (especially Wayland + IBus) the *idempotent* approach used on macOS is
+not possible: external writes to the active layout — `gsettings set
+org.gnome.desktop.input-sources current N` and `ibus engine <name>` — are
+silently ignored for actual input, and GNOME Shell exposes no D-Bus method to
+select a source (`Eval` is disabled). The **only** thing that changes what you
+type is GNOME Shell's own `switch-input-source` action, so the ZMK chords are
+bound directly to that.
+
+First enable the two layouts in GNOME (any order):
 
 ```sh
 gsettings set org.gnome.desktop.input-sources sources "[('xkb', 'us'), ('xkb', 'ru')]"
@@ -67,7 +75,14 @@ Then run:
 ./scripts/linux-setup.sh
 ```
 
-Creates `~/.local/bin/kb-layout-{en,ru}.sh` and registers GNOME custom keybindings for `Hyper+1`/`Hyper+2` via `gsettings`.
+This adds `Hyper+1`/`Hyper+2` to `org.gnome.desktop.wm.keybindings`
+`switch-input-source` / `switch-input-source-backward`.
+
+**Caveat:** unlike macOS this is a **toggle**, not idempotent. With exactly two
+sources it stays correct as long as the keyboard drives the switches; if they
+desync (after login, or after switching via `Super+Space` or the top-bar
+indicator), one extra switch re-syncs. For fully idempotent switching you'd need
+a small GNOME Shell extension exposing a "select source N" D-Bus method.
 
 ### Display
 
