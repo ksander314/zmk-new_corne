@@ -47,14 +47,19 @@
             bindings = <&kp LEFT_SHIFT>, <&kp CAPS>;
         };
 
-        to_dvp: to_dvp {
+        // Language mode. Both modes type the same DVP letters -- the layer only
+        // selects which set of punctuation combos is live, because , ? : and "
+        // need a different scan code per host layout. Forgetting to switch
+        // therefore costs four combos, never the alphabet.
+        lang_en: lang_en {
           compatible = "zmk,behavior-macro";
+          display-name = "English";
           wait-ms = <30>;
           tap-ms = <30>;
           #binding-cells = <0>;
           bindings = <
-            &kp LC(LS(LA(LG(N1))))  // Hyper+1 → Hammerspoon → set ABC
-            &to 1
+            &kp LC(LS(LA(LG(N1))))  // Hyper+1 → host → ABC
+            &to 0
           >;
         };
 
@@ -74,14 +79,15 @@
             bindings = <&none>, <&bootloader>;
         };
 
-        to_qwerty: to_qwerty {
+        lang_ru: lang_ru {
           compatible = "zmk,behavior-macro";
+          display-name = "Russian";
           wait-ms = <30>;
           tap-ms = <30>;
           #binding-cells = <0>;
           bindings = <
-            &kp LC(LS(LA(LG(N2))))  // Hyper+2 → Hammerspoon → set Russian
-            &to 0
+            &kp LC(LS(LA(LG(N2))))  // Hyper+2 → host → Russian DVP
+            &to 1
           >;
         };
     };
@@ -103,208 +109,218 @@
     combos {
         compatible = "zmk,combos";
 
+        // layers = <0> is the English mode, <1> the Russian one. Both type the
+        // same letters; the layer exists only so that , ? : and " can send the
+        // scan code the current host layout needs. ZMK matches a combo against
+        // the highest active layer, so <0 1> means "either mode, but not while
+        // SPEC is held".
+
         combo_minus {
             timeout-ms = <50>;
-            key-positions = <25 26>;  // L + ; home (right ring + pinky) → MINUS (kept as backup)
+            key-positions = <25 26>;  // N + S home, д + ж in RU (right ring + pinky) → MINUS
             bindings = <&kp MINUS>;
             layers = <0 1 2>;
         };
 
         combo_minus_top {
             timeout-ms = <40>;
-            key-positions = <4 8>;    // R + U top (index mirror, above F+J = ,) → MINUS
+            key-positions = <4 8>;    // P + G top, к + г in RU (index mirror, above U+H = ,) → MINUS
             bindings = <&kp MINUS>;
             layers = <0 1 2>;
         };
 
         combo_underscore {
             timeout-ms = <40>;
-            key-positions = <2 10>;   // W + O top (ring mirror) → LS(MINUS) → _ (same in EN and RU)
+            key-positions = <2 10>;   // , + R top, ц + щ in RU (ring mirror) → LS(MINUS) → _ (same in EN and RU)
             bindings = <&kp LS(MINUS)>;
             layers = <0 1>;
         };
 
         combo_asterisk {
             timeout-ms = <40>;
-            key-positions = <5 7>;    // T + Y top (inner index mirror) → LS(N8) → * (same in EN and RU)
+            key-positions = <5 7>;    // Y + F top, е + н in RU (inner index mirror) → LS(N8) → * (same in EN and RU)
             bindings = <&kp LS(NUMBER_8)>;
             layers = <0 1>;
         };
 
         combo_dollar {
             timeout-ms = <40>;
-            key-positions = <1 11>;   // Q + P top (pinky mirror) → LS(N4) → $ (EN only; in RU same scan code gives ;)
+            key-positions = <1 11>;   // ; + L top (pinky mirror) → LS(N4) → $ (EN only; in RU same scan code gives ;)
             bindings = <&kp LS(NUMBER_4)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_exclamation {
             timeout-ms = <40>;
-            key-positions = <14 26>;  // A + ; home (pinky mirror) → ! (LS(N1) same in EN and RU)
+            key-positions = <14 26>;  // A + S home, ф + ж in RU (pinky mirror) → ! (LS(N1) same in EN and RU)
             bindings = <&kp LS(NUMBER_1)>;
             layers = <0 1>;
         };
 
         combo_dquote_en {
             timeout-ms = <40>;
-            key-positions = <16 24>;  // D + K home (middle mirror) → LS(SQT) → " on EN
+            key-positions = <16 24>;  // E + T home (middle mirror) → LS(SQT) → " on EN
             bindings = <&kp LS(SQT)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_dquote_ru {
             timeout-ms = <40>;
-            key-positions = <16 24>;  // D + K home (middle mirror) → LS(NUMBER_2) → " on Russian Mac
+            key-positions = <16 24>;  // E + T home, в + л in RU (middle mirror) → LS(N2) → " on RU
             bindings = <&kp LS(NUMBER_2)>;
-            layers = <0>;
+            layers = <1>;
         };
 
         combo_lshift {
             timeout-ms = <30>;
-            key-positions = <15 16>;  // S + D home (left ring + middle) → sticky LSHIFT, mirrors combo_rshift
+            key-positions = <15 16>;  // O + E home, ы + в in RU (left ring + middle) → sticky LSHIFT
             bindings = <&sk LEFT_SHIFT>;
             layers = <0 1>;
         };
 
         combo_rshift {
             timeout-ms = <30>;
-            key-positions = <24 25>;  // K + L home (right middle + ring) → sticky RSHIFT
+            key-positions = <24 25>;  // T + N home, л + д in RU (right middle + ring) → sticky RSHIFT
             bindings = <&sk RIGHT_SHIFT>;
             layers = <0 1>;
         };
 
         combo_tab {
             timeout-ms = <40>;
-            key-positions = <1 2>;    // Q + W top (left pinky + ring) → TAB
+            key-positions = <1 2>;    // ; + , top, й + ц in RU (left pinky + ring) → TAB
             bindings = <&kp TAB>;
             layers = <0 1>;
         };
 
         combo_lgui {
             timeout-ms = <40>;
-            key-positions = <29 30>;  // Z + X bottom-left (QWERTY) / APOS + Q (DVP) → sticky LGUI
+            key-positions = <29 30>;  // APOS + Q bottom-left (я + ч in RU) → sticky LGUI
             bindings = <&sk LEFT_GUI>;
             layers = <0 1>;
         };
 
         combo_comma_en {
             timeout-ms = <40>;
-            key-positions = <17 23>;  // F + J home (index mirror) → COMMA → , on EN layout
+            key-positions = <17 23>;  // U + H home (index mirror) → COMMA → , on EN
             bindings = <&kp COMMA>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_comma_ru {
             timeout-ms = <40>;
-            key-positions = <17 23>;  // F + J home (index mirror) → LS(FSLH) → , on Russian Mac
+            key-positions = <17 23>;  // U + H home, а + о in RU (index mirror) → LS(FSLH) → , on RU
             bindings = <&kp LS(FSLH)>;
-            layers = <0>;
+            layers = <1>;
         };
 
         combo_question_en {
             timeout-ms = <40>;
-            key-positions = <15 25>;  // S + L home (ring mirror) → LS(FSLH) → ? on EN
+            key-positions = <15 25>;  // O + N home (ring mirror) → LS(FSLH) → ? on EN
             bindings = <&kp LS(FSLH)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_question_ru {
             timeout-ms = <40>;
-            key-positions = <15 25>;  // S + L home (ring mirror) → LS(NUMBER_7) → ? on Russian Mac
+            key-positions = <15 25>;  // O + N home, ы + д in RU (ring mirror) → LS(N7) → ? on RU
             bindings = <&kp LS(NUMBER_7)>;
-            layers = <0>;
+            layers = <1>;
         };
 
         combo_colon_en {
             timeout-ms = <40>;
-            key-positions = <18 22>;  // G + H home (inner index mirror) → LS(SEMI) → : on EN
+            key-positions = <18 22>;  // I + D home (inner index mirror) → LS(SEMI) → : on EN
             bindings = <&kp LS(SEMI)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_colon_ru {
             timeout-ms = <40>;
-            key-positions = <18 22>;  // G + H home (inner index mirror) → LS(NUMBER_6) → : on Russian Mac
+            key-positions = <18 22>;  // I + D home, п + р in RU (inner index mirror) → LS(N6) → : on RU
             bindings = <&kp LS(NUMBER_6)>;
-            layers = <0>;
+            layers = <1>;
         };
 
         combo_caps_word {
             timeout-ms = <40>;
-            key-positions = <33 36>;  // B + N bottom-inner-index → caps_word (auto-off on space)
+            key-positions = <33 36>;  // X + B bottom-inner-index, и + т in RU → caps_word (auto-off on space)
             bindings = <&caps_word>;
             layers = <0 1>;
         };
 
         combo_tilde {
             timeout-ms = <40>;
-            key-positions = <3 9>;    // E + I top row (left middle + right ring) → ~ in EN, Ё in RU
+            key-positions = <3 9>;    // . + C top row, у + ш in RU (middle mirror) → ~ in EN, Ё in RU
             bindings = <&kp LS(GRAVE)>;
             layers = <0 1>;
         };
 
         combo_lbkt {
             timeout-ms = <40>;
-            key-positions = <2 15>;   // , + O (left ring vertical) → [
+            key-positions = <2 15>;   // , + O (left ring vertical, one finger) → [ , gives х in RU
             bindings = <&kp LEFT_BRACKET>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_lbrace {
             timeout-ms = <40>;
-            key-positions = <3 16>;   // . + E (left middle vertical) → {
+            key-positions = <3 16>;   // . + E (left middle vertical, one finger) → { , gives Х in RU
             bindings = <&kp LEFT_BRACE>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_rbrace {
             timeout-ms = <40>;
-            key-positions = <4 17>;   // P + U (left index vertical) → }
+            key-positions = <4 17>;   // P + U (left index vertical, one finger) → } , gives Ъ in RU
             bindings = <&kp RIGHT_BRACE>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_lparen {
             timeout-ms = <40>;
-            key-positions = <5 18>;   // Y + I (left index-stretch vertical) → (
+            key-positions = <5 18>;   // Y + I (left index-stretch vertical, one finger) → ( , same in RU
             bindings = <&kp LS(NUMBER_9)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_rparen {
             timeout-ms = <40>;
-            key-positions = <9 24>;   // C + T (right middle vertical) → )
+            key-positions = <9 24>;   // C + T (right middle vertical, one finger) → ) , same in RU
             bindings = <&kp LS(NUMBER_0)>;
-            layers = <1>;
+            layers = <0>;
         };
 
         combo_rbkt {
             timeout-ms = <40>;
-            key-positions = <11 26>;  // L + S (right pinky vertical) → ]
+            key-positions = <11 26>;  // L + S (right pinky vertical, one finger) → ] , gives ъ in RU
             bindings = <&kp RIGHT_BRACKET>;
-            layers = <1>;
+            layers = <0>;
         };
     };
 
     keymap {
         compatible = "zmk,keymap";
 
+        // The two language modes carry the same DVP letters -- see lang_en /
+        // lang_ru above. Layer 0 is the default, so a reset, a reflash or a
+        // wake from deep sleep lands on a layout that types, not on one that
+        // nobody uses.
         layer_0 {
-            display-name = "QWERTY";
+            display-name = "EN";
             bindings = <
-&none                &kp Q  &kp W  &kp E     &kp R  &kp T                               &kp UP                &kp Y              &kp U     &kp I      &kp O    &kp P     &none
-&none                &kp A  &kp S  &kp D     &kp F  &kp G                     &kp LEFT  &kp ENTER  &kp RIGHT  &kp H              &kp J     &kp K      &kp L    &kp SEMI  &none
-&none                &kp Z  &kp X  &kp C     &kp V  &kp B        &trans                 &kp DOWN              &kp N              &kp M     &kp COMMA  &kp DOT  &kp FSLH  &none
-                         &kp LALT  &mt LCTRL SPACE  &lt 2 ESCAPE                                           &kp BSPC  &mt RCTRL ENTER  &kp LEFT_GUI
+&none           &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &none
+&none           &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &none
+&none           &kp APOS         &kp Q           &kp J         &kp K         &kp X                   &kp C_MUTE      &kp DOWN                   &kp B            &kp M            &kp W            &kp V            &kp Z     &none
+                                                 &kp LALT        &mt LCTRL SPACE  &lt 2 ESCAPE                                                         &kp BSPC         &mt RCTRL ENTER  &kp LEFT_GUI
             >;
 
-             sensor-bindings = <&inc_dec_kp C_VOLUME_UP C_VOLUME_DOWN>;
-
-           
+            sensor-bindings = <&scroll_encoder>;
         };
 
+        // Identical to layer 0 on purpose: scripts/gen-layouts.py refuses to
+        // generate a host layout if the two ever drift apart.
         layer_1 {
-            display-name = "DVP";
+            display-name = "RU";
             bindings = <
 &none           &kp SEMI         &kp COMMA       &kp DOT       &kp P         &kp Y                                   &kp UP                     &kp F            &kp G            &kp C            &kp R            &kp L     &none
 &none           &kp A            &kp O           &kp E         &kp U         &kp I                   &kp LEFT  &kp ENTER       &kp RIGHT  &kp D            &kp H            &kp T            &kp N            &kp S     &none
@@ -332,8 +348,8 @@
             bindings = <
 &none        &kp F1      &kp F2     &kp F3       &kp F4     &bt BT_NXT                                  &mmv MOVE_UP                     &td_bt_clr       &kp F7     &kp F8       &kp F9      &kp F10          &none
 &none        &trans      &mkp LCLK  &mkp MCLK    &td_boot   &mkp MB4                &mmv MOVE_LEFT  &mkp LCLK       &mmv MOVE_RIGHT  &mkp LCLK    &td_boot   &mkp MCLK    &mkp RCLK   &kp PRINTSCREEN  &none
-&none        &sys_reset  &trans     &to_qwerty        &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &trans       &sys_reset  &kp SCROLLLOCK   &none
-                                    &trans       &trans      &to_dvp                                                                  &trans       &trans     &trans
+&none        &sys_reset  &trans     &lang_ru          &trans     &mkp MB5  &kp C_MUTE                    &mmv MOVE_DOWN                   &trans       &trans     &trans       &sys_reset  &kp SCROLLLOCK   &none
+                                    &trans       &trans      &lang_en                                                              &trans       &trans     &trans
             >;
 
             sensor-bindings = <&scroll_encoder>;

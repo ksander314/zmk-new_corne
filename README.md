@@ -26,16 +26,29 @@
 
 ### Layers
 
-- **Layer 0 (QWERTY)** — used with macOS Russian input source
-- **Layer 1 (DVP)** — Dvorak Programmer, used with macOS ABC input source
-- **Layer 2 (SPEC)** — numbers and symbols, accessed via `MO(2)`
+- **Layer 0 (EN)** — Dvorak Programmer, used with the ABC input source. The default layer, so a reset or a wake from deep sleep lands here.
+- **Layer 1 (RU)** — *the same DVP letters*, used with the Russian DVP input source
+- **Layer 2 (SPEC)** — numbers and symbols, accessed via `LT(2)` on the left inner thumb
 - **Layer 3 (BTWN)** — F-keys, mouse, bluetooth, bootloader, accessed via `TO(3)` from SPEC layer
+
+Layers 0 and 1 are letter-for-letter identical, and `scripts/gen-layouts.py`
+refuses to generate a host layout if they ever drift apart. The mode exists for
+one reason: `,` `?` `:` and `"` are typed with combos, and each needs a
+*different scan code* depending on which layout the host has active. There is no
+single binding that gives `,` in both — US puts it on `AB08`, and in Russian
+that key has to be `ц`. So the keyboard keeps a language flag, but a stale flag
+costs those four combos, never the alphabet.
 
 ### Input source switching
 
-ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2) when switching layers. The host OS intercepts these and sets the input source **idempotently** (not toggle).
+ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2) when switching mode. The host OS intercepts these and sets the input source **idempotently** (not toggle).
 
 #### macOS
+
+Copy `layouts/Russian DVP.keylayout` into `~/Library/Keyboard Layouts/`, then
+add it under **System Settings → Keyboard → Input Sources → Others**. Its ⌘ and
+⌃ maps emit plain US characters, so every shortcut stays on the physical key it
+has in ABC.
 
 Install [Hammerspoon](https://www.hammerspoon.org/) (`brew install --cask hammerspoon`) and add to `~/.hammerspoon/init.lua`:
 
@@ -49,9 +62,12 @@ hs.hotkey.bind(hyper, "1", function()
 end)
 
 hs.hotkey.bind(hyper, "2", function()
-    hs.keycodes.setLayout("Russian – PC")
+    hs.keycodes.setLayout("Russian DVP")
 end)
 ```
+
+Not `"Russian – PC"`: that is the stock layout drawn for QWERTY positions, and
+the firmware no longer has a QWERTY layer to match it with.
 
 #### Linux (GNOME)
 
@@ -82,7 +98,52 @@ This adds `Hyper+1`/`Hyper+2` to `org.gnome.desktop.wm.keybindings`
 sources it stays correct as long as the keyboard drives the switches; if they
 desync (after login, or after switching via `Super+Space` or the top-bar
 indicator), one extra switch re-syncs. For fully idempotent switching you'd need
-a small GNOME Shell extension exposing a "select source N" D-Bus method.
+a small GNOME Shell extension exposing a "select source N" D-Bus method — there
+is one on the `custom-ru-dvp-layout` branch, not merged here yet.
+
+### Russian on the DVP positions
+
+HID carries scancodes, not characters, so one of the two alphabets always has to
+come from the host — there is no usage code for «й». The *arrangement* does not:
+[`scripts/gen-layouts.py`](scripts/gen-layouts.py) generates the stock Russian
+layout permuted so that every Cyrillic letter lands on the same physical key it
+has always occupied, while the firmware types DVP in both modes.
+
+```bash
+python3 scripts/gen-layouts.py   # regenerate after retuning the letters
+./scripts/install-ru-dvp.sh      # Linux; prints how to verify and roll back
+```
+
+The permutation is read out of `config/eyelash_corne.keymap`, so retuning the
+letters and re-running the generator keeps the two in step. The QWERTY reference
+it permutes against is a constant in the script — it describes the keyboard
+`ru` was drawn for, not this one.
+
+In Russian the letters are exactly where they are on any ЙЦУКЕН board:
+
+```
+                left half                        right half
+top      ;    ,    .    P    Y            F    G    C    R    L
+         й    ц    у    к    е            н    г    ш    щ    з
+
+home     A    O    E    U    I            D    H    T    N    S
+         ф    ы    в    а    п            р    о    л    д    ж
+
+bottom   '    Q    J    K    X            B    M    W    V    Z
+         я    ч    с    м    и            т    ь    б    ю    . ,
+```
+
+#### What shifts
+
+`х`, `ъ`, `ё` and `\` are inherited from stock `ru` untouched, so they stay
+reachable from the symbol layer exactly as before. Two symbol-layer keys move,
+because they sit on keys the permutation touches: in Russian the SPEC
+apostrophe (hold on position 26) now gives `я` instead of `э`, and SPEC `/`
+gives `э` instead of `.`. Both already produced the wrong character under stock
+`ru`; `э` simply moved from the first key to the second.
+
+The bracket combos stay English-only, so `х`/`ъ` still come from SPEC. Making
+them `layers = <0 1>` would put `х ъ Х Ъ` on the home row in Russian too.
 
 ### Display
 
