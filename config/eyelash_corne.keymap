@@ -208,8 +208,11 @@
 
         combo_comma_ru {
             timeout-ms = <40>;
-            key-positions = <17 23>;  // U + H home, а + о in RU (index mirror) → LS(FSLH) → , on RU
-            bindings = <&kp LS(FSLH)>;
+            key-positions = <17 23>;  // U + H home, а + о in RU (index mirror) → LS(Z) → , on RU
+            // Not LS(FSLH): that was the comma under stock `ru`, where <AB10>
+            // carries . and , -- in the permuted layout <AB10> is э and the
+            // comma sits on <AB01>, i.e. the key DVP calls Z.
+            bindings = <&kp LS(Z)>;
             layers = <1>;
         };
 
