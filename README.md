@@ -97,6 +97,52 @@ Shell process:
 The extension exports one D-Bus method that calls `InputSource.activate()`, so
 GNOME Shell performs the switch itself and every layer of state agrees.
 
+### Alternative: Russian on the DVP positions
+
+Everything above exists because the keyboard has to tell the host to change
+layout, which needs host-side code on both platforms. The alternative is to stop
+switching layers for language at all.
+
+HID carries scancodes, not characters, so one of the two alphabets always has to
+come from the host — there is no usage code for «й». The *arrangement* does not:
+[`scripts/gen-layouts.py`](scripts/gen-layouts.py) generates the stock Russian
+layout permuted so that every Cyrillic letter lands on the same physical key it
+occupies today, with the firmware pinned to its DVP layer. The keyboard then
+holds no language state, needs no macros, and language switching is the OS's own
+shortcut.
+
+The permutation is read out of `config/eyelash_corne.keymap`, so retuning layer
+1 and re-running the generator keeps the two in step. It is checked to be a
+bijection over the 31 alphanumeric positions, so a keymap that grows or loses a
+key fails generation instead of silently dropping a letter.
+
+```bash
+python3 scripts/gen-layouts.py   # regenerate after changing layer 1
+./scripts/install-ru-dvp.sh      # Linux; prints how to verify and roll back
+```
+
+On macOS, copy `layouts/Russian DVP.keylayout` into `~/Library/Keyboard
+Layouts/`, log out and back in, then add it under **System Settings → Keyboard →
+Input Sources → Others**. Its ⌘ and ⌃ maps emit plain US characters, so every
+shortcut stays on the physical key it has in the English source.
+
+Nothing in the firmware changes — layer 0 and the Hyper macros stay put, so a
+machine without the layout installed still works the old way.
+
+#### What shifts
+
+`х`, `ъ`, `ё` and `\` are inherited from stock `ru` untouched, so they stay
+reachable from the symbol layer exactly as they are today. Three symbol-layer
+keys move, because they sit on keys the permutation touches: in Russian, `'`
+gives `я` instead of `э`, `X` gives `и` instead of `ч`, and `/` gives `э`
+instead of `.`. All three already produced the wrong character under stock `ru`.
+
+The combos become live in Russian, since layer 1 is now always active. Six of
+the seven are vertical — both keys in one column, one finger — so they are hard
+to trigger by accident. The exception is `combo_minus` (right ring + pinky,
+50 ms), which in Russian sits under `д`+`ж`: watch for it eating «жд» in words
+like «между» or «подожди».
+
 ### Display
 
 Uses a custom nice!view shield (`boards/shields/nice_view_custom/`) based on [nice-view-mod](https://github.com/GPeye/nice-view-mod). The right half (peripheral) shows Go Gopher + GNU Emacs logo. The left half (central) shows the standard status screen (layer, battery, BT profile, WPM).
