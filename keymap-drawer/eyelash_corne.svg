@@ -971,7 +971,7 @@ rect.held, rect.combo.held {
 <path d="M490,91 l-219,0" class="combo"/>
 <path d="M490,91 l219,0" class="combo"/>
 <rect rx="6" ry="6" x="476" y="78" width="28" height="26" class="combo"/>
-<text x="490" y="91" class="combo tap">Sft+/</text>
+<text x="490" y="91" class="combo tap">Sft+Z</text>
 </g>
 <g class="combo combopos-11">
 <path d="M490,91 l-331,0" class="combo"/>
