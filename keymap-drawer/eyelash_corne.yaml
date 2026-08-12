@@ -1,47 +1,47 @@
 layout: {zmk_keyboard: eyelash_corne}
 layers:
-  QWERTY:
+  EN:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
-  - Q
-  - W
-  - E
-  - R
-  - T
-  - $$mdi:arrow-up-bold$$
-  - Y
-  - U
-  - I
-  - O
+  - {t: ;, s: ':'}
+  - {t: ',', s: <}
+  - {t: ., s: '>'}
   - P
+  - Y
+  - $$mdi:arrow-up-bold$$
+  - F
+  - G
+  - C
+  - R
+  - L
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - A
-  - S
-  - D
-  - F
-  - G
+  - O
+  - E
+  - U
+  - I
   - $$mdi:arrow-left-bold$$
   - {t: '$$mdi:keyboard-return$$', type: enter}
   - $$mdi:arrow-right-bold$$
+  - D
   - H
+  - T
+  - N
+  - S
+  - {t: '$$mdi:minus-circle-outline$$', type: none}
+  - {t: '$$mdi:minus-circle-outline$$', type: none}
+  - .
+  - Q
   - J
   - K
-  - L
-  - {t: ;, s: ':'}
-  - {t: '$$mdi:minus-circle-outline$$', type: none}
-  - {t: '$$mdi:minus-circle-outline$$', type: none}
-  - Z
   - X
-  - C
-  - V
-  - B
-  - {t: '$$mdi:transfer$$', type: trans}
+  - $$mdi:volume-off$$
   - $$mdi:arrow-down-bold$$
-  - N
+  - B
   - M
-  - {t: ',', s: <}
-  - {t: ., s: '>'}
-  - {t: /, s: '?'}
+  - W
+  - V
+  - Z
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - $$mdi:apple-keyboard-option$$
   - {t: '$$mdi:keyboard-space$$', h: '$$mdi:apple-keyboard-control$$'}
@@ -49,7 +49,7 @@ layers:
   - {t: '$$mdi:backspace$$', type: backspace}
   - {t: '$$mdi:keyboard-return$$', h: '$$mdi:apple-keyboard-control$$'}
   - $$mdi:apple-keyboard-command$$
-  DVP:
+  RU:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: ;, s: ':'}
   - {t: ',', s: <}
@@ -179,7 +179,7 @@ layers:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: '$$mdi:backup-restore$$', type: bootloader}
   - {t: '$$mdi:transfer$$', type: trans}
-  - '&to_qwerty'
+  - '&lang_ru'
   - {t: '$$mdi:transfer$$', type: trans}
   - '&mkp MB5'
   - $$mdi:volume-off$$
@@ -192,86 +192,86 @@ layers:
   - {t: '$$mdi:minus-circle-outline$$', type: none}
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
-  - '&to_dvp'
+  - '&lang_en'
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
   - {t: '$$mdi:transfer$$', type: trans}
 combos:
 - p: [25, 26]
   k: {h: '-', s: _}
-  l: [QWERTY, DVP, SPEC]
+  l: [EN, RU, SPEC]
 - p: [4, 8]
   k: {t: '-', s: _}
-  l: [QWERTY, DVP, SPEC]
+  l: [EN, RU, SPEC]
 - p: [2, 10]
   k: Sft+-
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [5, 7]
   k: Sft+8
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [1, 11]
   k: Sft+4
-  l: [DVP]
+  l: [EN]
 - p: [14, 26]
   k: Sft+1
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [16, 24]
   k: Sft+'
-  l: [DVP]
+  l: [EN]
 - p: [16, 24]
   k: Sft+2
-  l: [QWERTY]
+  l: [RU]
 - p: [15, 16]
   k: {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [24, 25]
   k: {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [1, 2]
   k: $$mdi:keyboard-tab$$
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [29, 30]
   k: {t: '$$mdi:apple-keyboard-command$$', h: '$$mdi:gesture-tap-hold$$'}
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [17, 23]
   k: {t: ',', s: <}
-  l: [DVP]
+  l: [EN]
 - p: [17, 23]
   k: Sft+/
-  l: [QWERTY]
+  l: [RU]
 - p: [15, 25]
   k: Sft+/
-  l: [DVP]
+  l: [EN]
 - p: [15, 25]
   k: Sft+7
-  l: [QWERTY]
+  l: [RU]
 - p: [18, 22]
   k: Sft+;
-  l: [DVP]
+  l: [EN]
 - p: [18, 22]
   k: Sft+6
-  l: [QWERTY]
+  l: [RU]
 - p: [33, 36]
   k: $$mdi:alpha-w-box$$
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [3, 9]
   k: Sft+`
-  l: [QWERTY, DVP]
+  l: [EN, RU]
 - p: [2, 15]
   k: {h: '[', s: '{'}
-  l: [DVP]
+  l: [EN]
 - p: [3, 16]
   k: '{'
-  l: [DVP]
+  l: [EN]
 - p: [4, 17]
   k: '}'
-  l: [DVP]
+  l: [EN]
 - p: [5, 18]
   k: Sft+9
-  l: [DVP]
+  l: [EN]
 - p: [9, 24]
   k: Sft+0
-  l: [DVP]
+  l: [EN]
 - p: [11, 26]
   k: {h: ']', s: '}'}
-  l: [DVP]
+  l: [EN]
