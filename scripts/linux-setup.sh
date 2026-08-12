@@ -39,23 +39,17 @@ SCHEMA="org.gnome.settings-daemon.plugins.media-keys"
 CUSTOM_SCHEMA="org.gnome.settings-daemon.plugins.media-keys.custom-keybinding"
 KEY_PATH="/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings"
 
-# Read existing custom keybindings and append ours
-EXISTING=$(gsettings get "$SCHEMA" custom-keybindings)
-if [ "$EXISTING" = "@as []" ]; then
-    EXISTING="[]"
-fi
-
-# Remove our slots if they already exist, then re-add
-CLEAN=$(echo "$EXISTING" | sed "s|'${KEY_PATH}/zmk-en/'||g; s|'${KEY_PATH}/zmk-ru/'||g; s|, ,|,|g; s|\[,|[|g; s|,]|]|g")
-
-# Build new list
-if [ "$CLEAN" = "[]" ]; then
-    NEW="['${KEY_PATH}/zmk-en/', '${KEY_PATH}/zmk-ru/']"
-else
-    # Strip trailing ] and append
-    INNER=$(echo "$CLEAN" | sed 's/\]$//')
-    NEW="${INNER}, '${KEY_PATH}/zmk-en/', '${KEY_PATH}/zmk-ru/']"
-fi
+# Read the existing custom keybindings, drop our own slots if a previous run
+# already added them, then re-append. Done in python rather than sed so that
+# re-running stays idempotent: textual deletion leaves stray separators behind
+# and produces a list gsettings refuses to parse.
+NEW=$(gsettings get "$SCHEMA" custom-keybindings \
+  | python3 -c 'import ast, sys
+raw = sys.stdin.read().strip()
+raw = raw[len("@as "):].strip() if raw.startswith("@as ") else raw
+key_path = sys.argv[1]
+ours = ["%s/zmk-en/" % key_path, "%s/zmk-ru/" % key_path]
+print(repr([p for p in ast.literal_eval(raw) if p not in ours] + ours))' "$KEY_PATH")
 
 gsettings set "$SCHEMA" custom-keybindings "$NEW"
 
