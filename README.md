@@ -67,7 +67,35 @@ Then run:
 ./scripts/linux-setup.sh
 ```
 
-Creates `~/.local/bin/kb-layout-{en,ru}.sh` and registers GNOME custom keybindings for `Hyper+1`/`Hyper+2` via `gsettings`.
+This installs the `zmk-input-source@ksander314` Shell extension from
+[`scripts/gnome-extension/`](scripts/gnome-extension), creates
+`~/.local/bin/kb-layout-{en,ru}.sh`, and registers GNOME custom keybindings for
+`Hyper+1`/`Hyper+2`.
+
+**Log out and back in** afterwards — Wayland cannot restart GNOME Shell in
+place, so a freshly installed extension only loads on the next login. Verify
+with:
+
+```sh
+gnome-extensions info zmk-input-source@ksander314
+~/.local/bin/kb-layout-ru.sh   # should switch the layout and the panel indicator
+```
+
+##### Why an extension is needed
+
+GNOME Shell has no supported way to select an input source from outside the
+Shell process:
+
+- `gsettings set org.gnome.desktop.input-sources current N` does nothing. Shell
+  only *writes* that key to record its own state and never reacts to external
+  writes, so the command succeeds and no layout changes.
+- `ibus engine xkb:...` does move the mutter keymap — `setxkbmap -query` will
+  even report the new layout — but Shell keeps its own idea of the current
+  source, so the panel indicator and the per-application input context stay on
+  the old one.
+
+The extension exports one D-Bus method that calls `InputSource.activate()`, so
+GNOME Shell performs the switch itself and every layer of state agrees.
 
 ### Display
 

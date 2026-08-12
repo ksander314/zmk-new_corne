@@ -1,0 +1,7 @@
+{
+  "uuid": "zmk-input-source@ksander314",
+  "name": "ZMK Input Source",
+  "description": "Exposes a D-Bus method that activates a GNOME input source by its xkb id, so the ZMK layer-switching macros can select a layout idempotently. GNOME Shell offers no supported way to do this from outside: it ignores writes to org.gnome.desktop.input-sources current, and driving IBus directly moves only the mutter keymap while Shell's own state goes stale.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/ksander314/zmk-new_corne"
+}
