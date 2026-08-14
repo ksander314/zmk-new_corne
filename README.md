@@ -31,6 +31,14 @@
 - **Layer 2 (SPEC)** — numbers and symbols, accessed via `MO(2)`
 - **Layer 3 (BTWN)** — F-keys, mouse, bluetooth, bootloader, accessed via `TO(3)` from SPEC layer
 
+Both outer columns are blank (`&none`). What used to live there — Tab, the sticky
+shifts, Ctrl, `'` and `/` — moved onto combos and the symbol layer. The last
+revision that still used the outer columns is kept under the tag `wide-cols`:
+
+```sh
+git switch -c wide wide-cols
+```
+
 ### Input source switching
 
 ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2) when switching layers. The host OS intercepts these and sets the input source **idempotently** (not toggle).
