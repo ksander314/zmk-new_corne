@@ -96,6 +96,8 @@ a small GNOME Shell extension exposing a "select source N" D-Bus method.
 
 Uses a custom nice!view shield (`boards/shields/nice_view_custom/`) based on [nice-view-mod](https://github.com/GPeye/nice-view-mod). The right half (peripheral) shows Go Gopher + GNU Emacs logo. The left half (central) shows the standard status screen (layer, battery, BT profile, WPM).
 
+Both halves also show the short sha of the commit the firmware was built from, so a flash can be checked against `git log`: under the layer name on the left, between the gopher and the Emacs logo on the right. It reads `unknown` if git was not available at build time. On the right it is drawn over columns 63–75 of the image in `widgets/art.c` (`SHA_BAND_X` in `widgets/peripheral_status.c`), so keep those empty when replacing the art.
+
 #### Changing the display art
 
 The nice!view is a 160x68 monochrome display mounted vertically. Images are stored as 140x68 LVGL arrays — the display driver handles rotation.
