@@ -4,3 +4,5 @@ modules/
 tools/
 .west/
 /.agent-shell/
+.claude-code-mcp.log
+__pycache__/
