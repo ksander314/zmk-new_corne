@@ -617,12 +617,22 @@ rect.held, rect.combo.held {
 <text x="490" y="97" class="combo tap">Sft+6</text>
 </g>
 <g class="combo combopos-13">
+<rect rx="6" ry="6" x="882" y="64" width="28" height="26" class="combo"/>
+<text x="896" y="77" class="combo tap">&#x27;</text>
+<text x="896" y="66" class="combo shifted">&quot;</text>
+</g>
+<g class="combo combopos-14">
+<rect rx="6" ry="6" x="70" y="64" width="28" height="26" class="combo"/>
+<text x="84" y="77" class="combo tap">`</text>
+<text x="84" y="66" class="combo shifted">~</text>
+</g>
+<g class="combo combopos-15">
 <path d="M490,153 l-163,0" class="combo"/>
 <path d="M490,153 l163,0" class="combo"/>
 <rect rx="6" ry="6" x="476" y="140" width="28" height="26" class="combo"/>
 <use href="#mdi:alpha-w-box" xlink:href="#mdi:alpha-w-box" x="481" y="144" height="18" width="18.0" class="combo tap glyph mdi:alpha-w-box"/>
 </g>
-<g class="combo combopos-14">
+<g class="combo combopos-16">
 <path d="M490,28 l-275,0" class="combo"/>
 <path d="M490,28 l275,0" class="combo"/>
 <rect rx="6" ry="6" x="476" y="15" width="28" height="26" class="combo"/>
