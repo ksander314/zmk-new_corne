@@ -5,6 +5,8 @@ Tooling for my eyelash_corne ZMK config in `~/src/zmk-new_corne`.
 ```
 ./kb find '&'          how to type a character, for ABC and Russian – PC
 ./kb heatmap --open    keystroke heatmap from ~/.emacs.d/keystroke-log.csv → out/heatmap.svg
+                       (chords like C-x C-f included; --no-chords for typed chars only)
+./kb bigrams           slowest pairs of consecutive chars, grouped by finger/hand
 ./kb draw --open       draw the current keymap → out/keymap.svg
 ./kb fetch             wait for the CI build of HEAD, download firmware → firmware/<sha>/
 ./kb flash left|right  copy that firmware to a half in bootloader mode
