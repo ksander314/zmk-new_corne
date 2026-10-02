@@ -602,7 +602,7 @@ def cmd_flash(args):
     subprocess.run(["cp", "-X", str(fw), vol], check=False)
     for _ in range(20):
         if not os.path.exists(vol):
-            print("Готово: половина перезагрузилась.")
+            print(f"Готово: половина перезагрузилась. На экране должно быть {dest.name}.")
             return
         time.sleep(0.5)
     print(f"Диск {vol} не исчез — проверь, прошилось ли.")
