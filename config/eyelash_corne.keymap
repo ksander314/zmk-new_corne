@@ -229,6 +229,20 @@
             layers = <0>;
         };
 
+        combo_eh_ru {
+            timeout-ms = <40>;
+            key-positions = <11 26>;  // DVP L + S (right pinky vertical) → SQT → э on Russian Mac; was SPEC + hold S
+            bindings = <&kp SQT>;
+            layers = <0>;
+        };
+
+        combo_yo_ru {
+            timeout-ms = <40>;
+            key-positions = <1 14>;   // DVP ; + A (left pinky vertical) → GRAVE → ё on Russian Mac; was SPEC + hold ;
+            bindings = <&kp GRAVE>;
+            layers = <0>;
+        };
+
         combo_caps_word {
             timeout-ms = <40>;
             key-positions = <33 36>;  // B + N bottom-inner-index → caps_word (auto-off on space)
