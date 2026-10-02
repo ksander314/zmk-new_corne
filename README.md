@@ -138,7 +138,10 @@ The palette in `art.c` controls colors. Swap the two palette entries to invert b
 
 ### Flashing
 
-Enter bootloader from layer 3 (BTWN): top-left key (left half) or top-right key (right half). Each half must be flashed separately.
+Enter bootloader from layer 3 (BTWN): hold SPEC, tap the BTWN key (QWERTY `C` / DVP `J`
+position), then **double-tap** the home-row index key of the half being flashed — `F`
+position for the left half, `J` position for the right half (QWERTY names). Each half must be
+flashed separately, over its own USB cable.
 
 ### ZMK version
 
