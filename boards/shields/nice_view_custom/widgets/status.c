@@ -174,20 +174,26 @@ static void draw_bottom(lv_obj_t *widget, lv_color_t cbuf[], const struct status
     init_rect_dsc(&rect_black_dsc, LVGL_BACKGROUND);
     lv_draw_label_dsc_t label_dsc;
     init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_montserrat_14, LV_TEXT_ALIGN_CENTER);
+    lv_draw_label_dsc_t label_dsc_sha;
+    init_label_dsc(&label_dsc_sha, LVGL_FOREGROUND, &lv_font_unscii_8, LV_TEXT_ALIGN_CENTER);
 
     // Fill background
     lv_canvas_draw_rect(canvas, 0, 0, CANVAS_SIZE, CANVAS_SIZE, &rect_black_dsc);
 
+    // Only rows 0..23 of this canvas are on screen (it sits at x = -44).
     // Draw layer
     if (state->layer_label == NULL) {
         char text[10] = {};
 
         sprintf(text, "LAYER %i", state->layer_index);
 
-        lv_canvas_draw_text(canvas, 0, 5, 68, &label_dsc, text);
+        lv_canvas_draw_text(canvas, 0, 0, 68, &label_dsc, text);
     } else {
-        lv_canvas_draw_text(canvas, 0, 5, 68, &label_dsc, state->layer_label);
+        lv_canvas_draw_text(canvas, 0, 0, 68, &label_dsc, state->layer_label);
     }
+
+    // Draw build sha
+    lv_canvas_draw_text(canvas, 0, 16, 68, &label_dsc_sha, KB_BUILD_SHA);
 
     // Rotate canvas
     rotate_canvas(canvas, cbuf);

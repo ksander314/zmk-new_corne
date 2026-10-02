@@ -27,6 +27,38 @@ LV_IMG_DECLARE(emacs_logo);
 
 static sys_slist_t widgets = SYS_SLIST_STATIC_INIT(&widgets);
 
+// Columns 63..75 of emacs_logo (art.c) are empty: the gap between the gopher
+// and the Emacs logo. The build sha goes there.
+#define SHA_BAND_X 63
+#define SHA_BAND_W 13
+
+static lv_color_t sha_buf[SHA_BAND_W * CANVAS_SIZE];
+static lv_color_t sha_tmp_buf[CANVAS_SIZE * SHA_BAND_W];
+
+static void draw_build_sha(lv_obj_t *parent) {
+    // Draw the text horizontally on a scratch canvas...
+    lv_obj_t *tmp = lv_canvas_create(parent);
+    lv_obj_add_flag(tmp, LV_OBJ_FLAG_HIDDEN);
+    lv_canvas_set_buffer(tmp, sha_tmp_buf, CANVAS_SIZE, SHA_BAND_W, LV_IMG_CF_TRUE_COLOR);
+    lv_canvas_fill_bg(tmp, LVGL_BACKGROUND, LV_OPA_COVER);
+
+    lv_draw_label_dsc_t label_dsc;
+    init_label_dsc(&label_dsc, LVGL_FOREGROUND, &lv_font_unscii_8, LV_TEXT_ALIGN_CENTER);
+    lv_canvas_draw_text(tmp, 0, 2, CANVAS_SIZE, &label_dsc, KB_BUILD_SHA);
+
+    // ...then turn it 90° the same way rotate_canvas() does: (x, y) -> (w - 1 - y, x).
+    for (int y = 0; y < SHA_BAND_W; y++) {
+        for (int x = 0; x < CANVAS_SIZE; x++) {
+            sha_buf[x * SHA_BAND_W + (SHA_BAND_W - 1 - y)] = sha_tmp_buf[y * CANVAS_SIZE + x];
+        }
+    }
+    lv_obj_del(tmp);
+
+    lv_obj_t *band = lv_canvas_create(parent);
+    lv_canvas_set_buffer(band, sha_buf, SHA_BAND_W, CANVAS_SIZE, LV_IMG_CF_TRUE_COLOR);
+    lv_obj_align(band, LV_ALIGN_TOP_LEFT, SHA_BAND_X, 0);
+}
+
 struct peripheral_status_state {
     bool connected;
 };
@@ -116,6 +148,9 @@ int zmk_widget_status_init(struct zmk_widget_status *widget, lv_obj_t *parent) {
     lv_obj_t *art = lv_img_create(widget->obj);
     lv_img_set_src(art, &emacs_logo);
     lv_obj_align(art, LV_ALIGN_TOP_LEFT, 0, 0);
+
+    // Created after art so it is drawn on top of it.
+    draw_build_sha(widget->obj);
 
     sys_slist_append(&widgets, &widget->node);
     widget_battery_status_init();

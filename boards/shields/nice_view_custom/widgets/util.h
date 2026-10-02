@@ -10,6 +10,11 @@
 
 #define CANVAS_SIZE 68
 
+// Set by CMakeLists.txt from `git rev-parse --short HEAD`.
+#ifndef KB_BUILD_SHA
+#define KB_BUILD_SHA "unknown"
+#endif
+
 #define LVGL_BACKGROUND                                                                            \
     IS_ENABLED(CONFIG_NICE_VIEW_WIDGET_INVERTED) ? lv_color_black() : lv_color_white()
 #define LVGL_FOREGROUND                                                                            \
