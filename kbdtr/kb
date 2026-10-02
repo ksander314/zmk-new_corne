@@ -8,6 +8,7 @@
   kb find CHARS [--layout abc|ru]   how to type a character
   kb heatmap [--days N] [--open]    keystroke heatmap from the Emacs keystroke log
   kb bigrams [--days N]             slowest pairs of consecutive keystrokes
+  kb index                          out/index.json for the Hammerspoon cheat sheet
   kb draw [--open]                  draw the current keymap (local keymap-drawer)
   kb fetch                          wait for the CI build of HEAD, download firmware
   kb flash left|right               copy firmware to a half in bootloader mode
@@ -18,6 +19,7 @@ import collections
 import csv
 import functools
 import glob
+import json
 import math
 import os
 import re
@@ -26,6 +28,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -37,6 +40,8 @@ KLOG = Path(os.environ.get("KB_KLOG", "~/.emacs.d/keystroke-log.csv")).expanduse
 HOME = Path(__file__).resolve().parent
 OUT = HOME / "out"
 FIRMWARE = HOME / "firmware"
+# Read by the Cmd+Alt+A cheat sheet in ~/.hammerspoon/init.lua.
+INDEX = OUT / "index.json"
 
 # Base layer used with each macOS input source (README "My setup").
 # Keys are the `layout` values written by ~/.emacs.d/lisp/init-keystroke-log.el.
@@ -269,8 +274,14 @@ def cap_label(binding):
     return str(binding)
 
 
+# Keys are named by what the DVP layer prints on them, in both input sources:
+# that is the map the user keeps in their head ('O', not QWERTY 'S').
+NAMING_LAYER = OS_LAYOUTS["ABC"]
+
+
 def pos_label(km, p):
-    return f"QWERTY {cap_label(km.layers[0][p])} · DVP {cap_label(km.layers[1][p])}"
+    """A key as the user knows it: 'O', ';', 'Space'."""
+    return cap_label(km.layers[NAMING_LAYER][p])
 
 
 # ---------------------------------------------------------------- ways
@@ -316,8 +327,8 @@ def is_shift(binding):
     return binding.behavior in ("sk", "kp") and held_modifier(binding) == "shift"
 
 
-def combo_text(km, c, base):
-    caps = " + ".join(cap_label(km.layers[base][p]) for p in c.positions)
+def combo_text(km, c):
+    caps = " + ".join(pos_label(km, p) for p in c.positions)
     return f"combo {c.name} ({caps})"
 
 
@@ -340,7 +351,7 @@ def _ways(km, layout, match):
     contexts = [(base, [], [])]
     if spec_pos is not None:
         contexts.append((SPEC, [f"держать {km.layer_names[SPEC]}: {describe_pos(spec_pos)} "
-                                f"[{cap_label(km.layers[base][spec_pos])}]"],
+                                f"[{pos_label(km, spec_pos)}]"],
                          [("key", base, spec_pos)]))
     found = []
     for layer, pre_steps, pre_presses in contexts:
@@ -350,7 +361,7 @@ def _ways(km, layout, match):
             sources.append((f"{describe_pos(p)} [{pos_label(km, p)}]", [("key", layer, p)], b))
         for i, c in enumerate(km.combos):
             if c.active_on(layer):
-                sources.append((combo_text(km, c, base), [("combo", layer, i)], c.binding))
+                sources.append((combo_text(km, c), [("combo", layer, i)], c.binding))
         shifts = [(f"Shift: {text}", presses) for text, presses, b in sources if is_shift(b)]
         for text, presses, b in sources:
             for kind, kc in outputs(b):
@@ -502,6 +513,68 @@ def cmd_find(args):
             if len(ways) > args.max:
                 print(f"  … ещё {len(ways) - args.max}, --max N чтобы увидеть")
             print()
+
+
+# ---------------------------------------------------------------- index
+
+def compact_way(km, way):
+    """One way on one line: 'SPEC + Shift + A (левый мизинец, домашний ряд)'.
+
+    Keys are named by pos_label, in either input source."""
+    kind, layer, idx = way.presses[-1]
+    parts = []
+    if layer == SPEC:
+        parts.append("SPEC")
+    if way.cost > 1 + (layer == SPEC):
+        parts.append("Shift")
+    if kind == "combo":
+        caps = "+".join(pos_label(km, p) for p in km.combos[idx].positions)
+        parts.append(f"combo {caps}")
+    else:
+        hold = "держать " if way.steps[-1].startswith("удержание") else ""
+        parts.append(f"{hold}{pos_label(km, idx)} ({describe_pos(idx)})")
+    return " + ".join(parts)
+
+
+def index_rows(km):
+    """hs.chooser rows per input source: every char the keymap can type.
+
+    A char the current source cannot type is still listed, with the source
+    that can."""
+    chars = sorted({c for table in CHARS.values() for pair in table.values() for c in pair
+                    if c.isprintable() or c == "\t"},
+                   key=lambda c: (c.isalnum(), c.isalpha(), c))
+    found = {layout: {} for layout in OS_LAYOUTS}
+    for layout in OS_LAYOUTS:
+        for ch in chars:
+            if ways := ways_for(km, layout, ch):
+                lines = dict.fromkeys(compact_way(km, w) for w in ways)
+                found[layout][ch] = "   |   ".join(list(lines)[:2])   # more gets cut off
+    index = {}
+    for layout in OS_LAYOUTS:
+        rows = []
+        for ch in chars:
+            sub = found[layout].get(ch)
+            if sub is None:
+                other = next((l for l in OS_LAYOUTS if l != layout and ch in found[l]), None)
+                if other is None:
+                    continue
+                sub = f"только в {other}: {found[other][ch]}"
+            label = CHAR_NAMES.get(ch, ch)
+            name = "" if ch.isalnum() else unicodedata.name(ch, "").lower()
+            rows.append({"text": f"{label}    {name}" if name else label, "subText": sub, "char": ch})
+        index[layout] = rows
+    return index
+
+
+def write_index():
+    OUT.mkdir(exist_ok=True)
+    INDEX.write_text(json.dumps(index_rows(load_keymap()), ensure_ascii=False, indent=1))
+    return INDEX
+
+
+def cmd_index(args):
+    print(write_index())
 
 
 # ---------------------------------------------------------------- heatmap
@@ -886,6 +959,7 @@ def cmd_flash(args):
     for _ in range(20):
         if not os.path.exists(vol):
             print(f"Готово: половина перезагрузилась. На экране должно быть {dest.name}.")
+            print(f"Шпаргалка Cmd+Alt+A обновлена: {write_index()}")
             return
         time.sleep(0.5)
     print(f"Диск {vol} не исчез — проверь, прошилось ли.")
@@ -915,6 +989,9 @@ def main():
     p.add_argument("--top", type=int, default=20, help="сколько пар показать")
     p.add_argument("--max-ms", type=int, default=1000, help="интервал длиннее — пауза, не печать")
     p.set_defaults(func=cmd_bigrams)
+
+    p = sub.add_parser("index", help="данные для шпаргалки Cmd+Alt+A в Hammerspoon")
+    p.set_defaults(func=cmd_index)
 
     p = sub.add_parser("draw", help="нарисовать текущий keymap")
     p.add_argument("--open", action="store_true")
