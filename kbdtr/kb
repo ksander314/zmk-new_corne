@@ -8,7 +8,8 @@
   kb find CHARS [--layout abc|ru]   how to type a character
   kb heatmap [--days N] [--open]    keystroke heatmap from the Emacs keystroke log
   kb bigrams [--days N]             slowest pairs of consecutive keystrokes
-  kb index                          out/index.json for the Hammerspoon cheat sheet
+  kb index                          out/index.json and out/layers.json for the cheat sheets
+  kb layers [--layout abc|ru]       the layers as text, as they type in an input source
   kb draw [--open]                  draw the current keymap (local keymap-drawer)
   kb fetch                          wait for the CI build of HEAD, download firmware
   kb flash left|right               copy firmware to a half in bootloader mode
@@ -40,8 +41,10 @@ KLOG = Path(os.environ.get("KB_KLOG", "~/.emacs.d/keystroke-log.csv")).expanduse
 HOME = Path(__file__).resolve().parent
 OUT = HOME / "out"
 FIRMWARE = HOME / "firmware"
-# Read by the Cmd+Alt+A cheat sheet in ~/.hammerspoon/init.lua.
+# Read by the Cmd+Alt+A cheat sheet (hammerspoon.lua) and by kbdtr-find (kbdtr.el).
 INDEX = OUT / "index.json"
+# The layers as text, read by kbdtr-layers (kbdtr.el).
+LAYERS = OUT / "layers.json"
 
 # Base layer used with each macOS input source (README "My setup").
 # Keys are the `layout` values written by ~/.emacs.d/lisp/init-keystroke-log.el.
@@ -568,13 +571,133 @@ def index_rows(km):
 
 
 def write_index():
+    """out/index.json and out/layers.json for the current keymap."""
     OUT.mkdir(exist_ok=True)
-    INDEX.write_text(json.dumps(index_rows(load_keymap()), ensure_ascii=False, indent=1))
-    return INDEX
+    km = load_keymap()
+    INDEX.write_text(json.dumps(index_rows(km), ensure_ascii=False, indent=1))
+    LAYERS.write_text(json.dumps({l: layers_text(km, l) for l in OS_LAYOUTS}, ensure_ascii=False, indent=1))
+    return INDEX, LAYERS
 
 
 def cmd_index(args):
-    print(write_index())
+    for path in write_index():
+        print(path)
+
+
+# ---------------------------------------------------------------- layers
+
+CELL = 5   # text columns per key unit of config/eyelash_corne.json; labels fit in CELL - 1
+
+KEY_NAMES = {
+    "SPACE": "Spc", "ENTER": "Ent", "BSPC": "Bspc", "TAB": "Tab", "ESCAPE": "Esc", "ESC": "Esc",
+    "UP": "↑", "DOWN": "↓", "LEFT": "←", "RIGHT": "→", "DELETE": "Del", "INSERT": "Ins",
+    "PAGE_DOWN": "PgDn", "PAGE_UP": "PgUp", "PRINTSCREEN": "PrSc", "SCROLLLOCK": "ScrL",
+    "CAPS": "Caps", "C_MUTE": "Mute", "C_VOLUME_UP": "Vol+", "C_VOLUME_DOWN": "Vol-",
+    "shift": "Shft", "ctrl": "Ctrl", "alt": "Alt", "gui": "Cmd",
+}
+BEHAVIOR_NAMES = {"caps_word": "CapW", "sys_reset": "Rst", "bootloader": "Boot",
+                  "td_boot": "Boot", "td_bt_clr": "BTcl", "to_dvp": "→EN", "to_qwerty": "→RU"}
+POINTER_NAMES = {"LCLK": "LClk", "MCLK": "MClk", "RCLK": "RClk",
+                 "MOVE_UP": "M↑", "MOVE_DOWN": "M↓", "MOVE_LEFT": "M←", "MOVE_RIGHT": "M→"}
+LEGEND = "▽ как на слое ниже · вторая строка — при удержании · sk — до следующей клавиши · ×2 — двойной тап"
+
+
+def key_label(kc, layout):
+    """What a keycode types in `layout`, in CELL - 1 columns: 'й', '&', 'Spc', 'F3'.
+
+    The char as typed, not a keycap capital: SPEC sends both х and Х."""
+    ch = kc.char(layout)
+    if ch and ch.isprintable() and ch.strip():
+        return ch
+    if kc.modifier:
+        return KEY_NAMES[kc.modifier]
+    return KEY_NAMES.get(kc.key, kc.key.title()[:CELL - 1])
+
+
+def binding_labels(km, layout, b):
+    """(tap, hold) of a binding in `layout`; hold is '' for keys that do not hold."""
+    a = b.args
+    if b.behavior == "none":
+        return "", ""
+    if b.behavior == "trans":
+        return "▽", ""
+    if b.behavior == "kp" and a:
+        return key_label(parse_keycode(a[0]), layout), ""
+    if b.behavior == "mt" and len(a) == 2:
+        return key_label(parse_keycode(a[1]), layout), key_label(parse_keycode(a[0]), layout)
+    if b.behavior == "lt" and len(a) == 2:
+        return key_label(parse_keycode(a[1]), layout), km.layer_names[int(a[0])][:CELL - 1]
+    if b.behavior == "sk" and a:
+        return key_label(parse_keycode(a[0]), layout), "sk"
+    if b.behavior == "to" and a:
+        return "→" + km.layer_names[int(a[0])][:CELL - 2], ""
+    if b.behavior in ("mkp", "mmv") and a:
+        return POINTER_NAMES.get(a[0], a[0][:CELL - 1]), ""
+    if b.behavior == "bt" and a:
+        return {"BT_NXT": "BT→", "BT_PRV": "BT←", "BT_CLR": "BTcl"}.get(a[0], "BT"), ""
+    if b.behavior.startswith("td_"):
+        return BEHAVIOR_NAMES.get(b.behavior, b.behavior[3:CELL + 2]), "×2"
+    return BEHAVIOR_NAMES.get(b.behavior, b.behavior[:CELL - 1]), ""
+
+
+def layer_grid(km, layout, layer):
+    """One layer as text, keys where config/eyelash_corne.json puts them: per key
+    row a line of taps and a line of holds."""
+    geometry = json.loads(LAYOUT_JSON.read_text())["layouts"]["default_layout"]["layout"]
+    rows = collections.defaultdict(list)
+    for p, g in enumerate(geometry):
+        b = km.layers[layer][p]
+        labels = ("", "") if b.behavior == "trans" and layer == 0 else binding_labels(km, layout, b)
+        # Half up, not round(): banker's rounding spaces x.5 keys unevenly.
+        rows[g["row"]].append((int(g["x"] * CELL + 0.5), *labels))
+    lines = []
+    for r in sorted(rows):
+        for i in (1, 2):
+            line = [" "] * (max(col for col, _, _ in rows[r]) + CELL)
+            for col, *labels in rows[r]:
+                text = labels[i - 1]
+                start = col + (CELL - 1 - len(text)) // 2
+                line[start:start + len(text)] = text
+            lines.append("".join(line).rstrip())
+    while lines and not lines[-1]:
+        lines.pop()
+    return lines
+
+
+def combos_lines(km, layout, layer, width):
+    """Combos active on `layer`: 'J+W →EN   O+N ?   …', wrapped at `width`."""
+    items = []
+    for c in km.combos:
+        if c.active_on(layer):
+            tap, hold = binding_labels(km, layout, c.binding)
+            keys = "+".join(pos_label(km, p) for p in c.positions)
+            items.append(f"{keys} {tap}/{hold}" if hold else f"{keys} {tap}")
+    lines, line = [], "combo "
+    for item in items:
+        if len(line) + len(item) > width and line.strip() != "combo":
+            lines.append(line.rstrip())
+            line = "      "
+        line += item + "   "
+    if items:
+        lines.append(line.rstrip())
+    return lines
+
+
+def layers_text(km, layout):
+    """The layers that type in `layout` (its base, SPEC, BTWN) as one text."""
+    base = OS_LAYOUTS[layout]
+    blocks = []
+    for layer in [base] + [l for l in range(len(km.layers)) if l not in OS_LAYOUTS.values()]:
+        grid = layer_grid(km, layout, layer)
+        title = km.layer_names[layer] + (f" · {layout}" if layer in (base, SPEC) else "")
+        blocks.append("\n".join([title, *grid, *combos_lines(km, layout, layer, max(map(len, grid)))]))
+    return "\n\n".join(blocks + [LEGEND]) + "\n"
+
+
+def cmd_layers(args):
+    layouts = [OS_LAYOUT_ALIASES[args.layout]] if args.layout else list(OS_LAYOUTS)
+    km = load_keymap()
+    print("\n".join(layers_text(km, layout) for layout in layouts), end="")
 
 
 # ---------------------------------------------------------------- heatmap
@@ -993,7 +1116,7 @@ def cmd_flash(args):
         # the drive for a while.
         if not os.path.exists(os.path.join(vol, "INFO_UF2.TXT")):
             print(f"Готово: половина перезагрузилась. На экране должно быть {dest.name}.")
-            print(f"Шпаргалка Cmd+Alt+A обновлена: {write_index()}")
+            print("Шпаргалки обновлены: " + ", ".join(map(str, write_index())))
             return
         time.sleep(0.5)
     print(f"Диск {vol} не исчез — проверь, прошилось ли.")
@@ -1024,8 +1147,12 @@ def main():
     p.add_argument("--max-ms", type=int, default=1000, help="интервал длиннее — пауза, не печать")
     p.set_defaults(func=cmd_bigrams)
 
-    p = sub.add_parser("index", help="данные для шпаргалки Cmd+Alt+A в Hammerspoon")
+    p = sub.add_parser("index", help="данные для шпаргалок: Cmd+Alt+A в Hammerspoon и kbdtr.el в Emacs")
     p.set_defaults(func=cmd_index)
+
+    p = sub.add_parser("layers", help="слои текстом, как они печатают в раскладке ОС")
+    p.add_argument("--layout", choices=sorted(OS_LAYOUT_ALIASES), help="только одна раскладка ОС")
+    p.set_defaults(func=cmd_layers)
 
     p = sub.add_parser("draw", help="нарисовать текущий keymap")
     p.add_argument("--open", action="store_true")
