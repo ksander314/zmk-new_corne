@@ -959,7 +959,10 @@ def cmd_fetch(args):
 
 
 def uf2_volume():
-    vols = [v for v in glob.glob("/Volumes/*") if os.path.exists(os.path.join(v, "INFO_UF2.TXT"))]
+    # macOS mounts the bootloader drive in /Volumes; on Linux udisks2 does it in
+    # /run/media/$USER (Fedora, Arch) or /media/$USER (Debian, Ubuntu).
+    vols = [v for pattern in ("/Volumes/*", "/run/media/*/*", "/media/*/*")
+            for v in glob.glob(pattern) if os.path.exists(os.path.join(v, "INFO_UF2.TXT"))]
     return vols[0] if vols else None
 
 
@@ -982,9 +985,13 @@ def cmd_flash(args):
             sys.exit("Диск bootloader не появился за 2 минуты.")
     print(f"{fw.name} → {vol}")
     # The board reboots as soon as the copy finishes; cp may report an error then.
-    subprocess.run(["cp", "-X", str(fw), vol], check=False)
+    # -X keeps macOS from writing a ._ file next to the firmware; GNU cp has no -X.
+    cp = ["cp", "-X"] if sys.platform == "darwin" else ["cp"]
+    subprocess.run([*cp, str(fw), vol], check=False)
     for _ in range(20):
-        if not os.path.exists(vol):
+        # INFO_UF2.TXT, not the mount point: on Linux the mount point can outlive
+        # the drive for a while.
+        if not os.path.exists(os.path.join(vol, "INFO_UF2.TXT")):
             print(f"Готово: половина перезагрузилась. На экране должно быть {dest.name}.")
             print(f"Шпаргалка Cmd+Alt+A обновлена: {write_index()}")
             return
