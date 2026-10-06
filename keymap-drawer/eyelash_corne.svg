@@ -638,6 +638,12 @@ rect.held, rect.combo.held {
 <rect rx="6" ry="6" x="476" y="15" width="28" height="26" class="combo"/>
 <text x="490" y="28" class="combo tap">Sft+`</text>
 </g>
+<g class="combo combopos-17">
+<path d="M490,140 l-275,0" class="combo"/>
+<path d="M490,140 l275,0" class="combo"/>
+<rect rx="6" ry="6" x="476" y="127" width="28" height="26" class="combo"/>
+<text x="490" y="140" class="combo tap"><tspan style="font-size: 86%">&amp;to_dvp</tspan></text>
+</g>
 </g>
 </g>
 <g transform="translate(40, 318)" class="layer-DVP">
@@ -1007,6 +1013,12 @@ rect.held, rect.combo.held {
 <rect rx="6" ry="6" x="882" y="64" width="28" height="26" class="combo"/>
 <text x="896" y="88" class="combo hold">]</text>
 <text x="896" y="66" class="combo shifted">}</text>
+</g>
+<g class="combo combopos-22">
+<path d="M490,140 l-275,0" class="combo"/>
+<path d="M490,140 l275,0" class="combo"/>
+<rect rx="6" ry="6" x="476" y="127" width="28" height="26" class="combo"/>
+<text x="490" y="140" class="combo tap"><tspan style="font-size: 60%">&amp;to_qwerty</tspan></text>
 </g>
 </g>
 </g>

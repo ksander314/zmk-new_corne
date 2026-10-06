@@ -281,3 +281,9 @@ combos:
 - p: [11, 26]
   k: {h: ']', s: '}'}
   l: [DVP]
+- p: [31, 38]
+  k: '&to_dvp'
+  l: [QWERTY]
+- p: [31, 38]
+  k: '&to_qwerty'
+  l: [DVP]
