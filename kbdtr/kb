@@ -735,14 +735,21 @@ class LogRow:
     relabeled: bool   # layout differs from the logged `layout` column
 
 
+# The same key again sooner than this is macOS key repeat (KeyRepeat 2, 30 ms,
+# here), not another press: no finger taps a key twice in 60 ms.
+REPEAT_MS = 60
+
+
 def iter_log(days=None):
     """Rows of KLOG in order, with the macOS layout each one was typed in.
 
     A letter decides the layout itself (Cyrillic is Russian – PC). Other rows
     take the logged `layout` column where it is reliable
-    (LAYOUT_RELIABLE_SINCE_MS), else the layout of the last letter before them."""
+    (LAYOUT_RELIABLE_SINCE_MS), else the layout of the last letter before them.
+    Key repeat while a key is held is skipped, so C-n held down is one press."""
     since = (time.time() - days * 86400) * 1000 if days else 0
     current = None
+    last = None    # (event, key) of the previous key row
     with KLOG.open(newline="") as f:
         for row in csv.DictReader(f):
             try:
@@ -753,6 +760,8 @@ def iter_log(days=None):
             if row["event"] == "layout":     # an input source switch, not a key
                 current = key if key in OS_LAYOUTS else current
                 continue
+            repeat = (row["event"], key) == last and 0 <= interval < REPEAT_MS
+            last = (row["event"], key)
             if row["event"] == "backspace":
                 event, value = "char", "\b"
             elif row["event"] == "char":
@@ -767,7 +776,9 @@ def iter_log(days=None):
                 layout = current or logged
             if ts < since:
                 continue
-            if event == "chord" and NOT_KEYBOARD.search(value):
+            if repeat:
+                event, value = "skip", "автоповтор"
+            elif event == "chord" and NOT_KEYBOARD.search(value):
                 event, value = "skip", "мышь / меню"
             elif layout not in OS_LAYOUTS:
                 event, value = "skip", f"layout {layout or '?'}"
