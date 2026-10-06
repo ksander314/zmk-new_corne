@@ -43,6 +43,8 @@ git switch -c wide wide-cols
 
 ZMK macros send `Hyper+1` (Ctrl+Shift+Alt+Cmd+1) and `Hyper+2` (Ctrl+Shift+Alt+Cmd+2) when switching layers. The host OS intercepts these and sets the input source **idempotently** (not toggle).
 
+The `J + W` combo (both middle fingers, bottom row) switches to the other language. The long way still works: hold SPEC, tap `J` for BTWN, then `J` for Russian or `Esc` for English.
+
 #### macOS
 
 Install [Hammerspoon](https://www.hammerspoon.org/) (`brew install --cask hammerspoon`) and add to `~/.hammerspoon/init.lua`:

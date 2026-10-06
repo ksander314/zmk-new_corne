@@ -299,6 +299,22 @@
             bindings = <&kp RIGHT_BRACKET>;
             layers = <1>;
         };
+
+        // Language toggle: the same pair switches either way, a shortcut for
+        // SPEC → BTWN → J (Russian) / Esc (English).
+        combo_lang_en {
+            timeout-ms = <40>;
+            key-positions = <31 38>;  // J + W bottom (middle mirror) → to_dvp: ABC + DVP layer
+            bindings = <&to_dvp>;
+            layers = <0>;
+        };
+
+        combo_lang_ru {
+            timeout-ms = <40>;
+            key-positions = <31 38>;  // J + W bottom (middle mirror) → to_qwerty: Russian – PC + QWERTY layer
+            bindings = <&to_qwerty>;
+            layers = <1>;
+        };
     };
 
     keymap {
