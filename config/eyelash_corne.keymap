@@ -102,157 +102,158 @@
 
     combos {
         compatible = "zmk,combos";
+        // Keys in the comments are named by what the DVP layer prints on them.
 
         combo_minus {
             timeout-ms = <50>;
-            key-positions = <25 26>;  // L + ; home (right ring + pinky) → MINUS (kept as backup)
+            key-positions = <25 26>;  // N + S home (right ring + pinky) → MINUS (kept as backup)
             bindings = <&kp MINUS>;
             layers = <0 1 2>;
         };
 
         combo_minus_top {
             timeout-ms = <40>;
-            key-positions = <4 8>;    // R + U top (index mirror, above F+J = ,) → MINUS
+            key-positions = <4 8>;    // P + G top (index mirror, above U+H = ,) → MINUS
             bindings = <&kp MINUS>;
             layers = <0 1 2>;
         };
 
         combo_underscore {
             timeout-ms = <40>;
-            key-positions = <2 10>;   // W + O top (ring mirror) → LS(MINUS) → _ (same in EN and RU)
+            key-positions = <2 10>;   // , + R top (ring mirror) → LS(MINUS) → _ (same in EN and RU)
             bindings = <&kp LS(MINUS)>;
             layers = <0 1>;
         };
 
         combo_asterisk {
             timeout-ms = <40>;
-            key-positions = <5 7>;    // T + Y top (inner index mirror) → LS(N8) → * (same in EN and RU)
+            key-positions = <5 7>;    // Y + F top (inner index mirror) → LS(N8) → * (same in EN and RU)
             bindings = <&kp LS(NUMBER_8)>;
             layers = <0 1>;
         };
 
         combo_dollar {
             timeout-ms = <40>;
-            key-positions = <1 11>;   // Q + P top (pinky mirror) → LS(N4) → $ (EN only; in RU same scan code gives ;)
+            key-positions = <1 11>;   // ; + L top (pinky mirror) → LS(N4) → $ (EN only; in RU same scan code gives ;)
             bindings = <&kp LS(NUMBER_4)>;
             layers = <1>;
         };
 
         combo_exclamation {
             timeout-ms = <40>;
-            key-positions = <14 26>;  // A + ; home (pinky mirror) → ! (LS(N1) same in EN and RU)
+            key-positions = <14 26>;  // A + S home (pinky mirror) → ! (LS(N1) same in EN and RU)
             bindings = <&kp LS(NUMBER_1)>;
             layers = <0 1>;
         };
 
         combo_dquote_en {
             timeout-ms = <40>;
-            key-positions = <16 24>;  // D + K home (middle mirror) → LS(SQT) → " on EN
+            key-positions = <16 24>;  // E + T home (middle mirror) → LS(SQT) → " on EN
             bindings = <&kp LS(SQT)>;
             layers = <1>;
         };
 
         combo_dquote_ru {
             timeout-ms = <40>;
-            key-positions = <16 24>;  // D + K home (middle mirror) → LS(NUMBER_2) → " on Russian Mac
+            key-positions = <16 24>;  // E + T home (middle mirror) → LS(NUMBER_2) → " on Russian Mac
             bindings = <&kp LS(NUMBER_2)>;
             layers = <0>;
         };
 
         combo_lshift {
             timeout-ms = <30>;
-            key-positions = <15 16>;  // S + D home (left ring + middle) → sticky LSHIFT, mirrors combo_rshift
+            key-positions = <15 16>;  // O + E home (left ring + middle) → sticky LSHIFT, mirrors combo_rshift
             bindings = <&sk LEFT_SHIFT>;
             layers = <0 1>;
         };
 
         combo_rshift {
             timeout-ms = <30>;
-            key-positions = <24 25>;  // K + L home (right middle + ring) → sticky RSHIFT
+            key-positions = <24 25>;  // T + N home (right middle + ring) → sticky RSHIFT
             bindings = <&sk RIGHT_SHIFT>;
             layers = <0 1>;
         };
 
         combo_tab {
             timeout-ms = <40>;
-            key-positions = <1 2>;    // Q + W top (left pinky + ring) → TAB
+            key-positions = <1 2>;    // ; + , top (left pinky + ring) → TAB
             bindings = <&kp TAB>;
             layers = <0 1>;
         };
 
         combo_lgui {
             timeout-ms = <40>;
-            key-positions = <29 30>;  // Z + X bottom-left (QWERTY) / APOS + Q (DVP) → sticky LGUI
+            key-positions = <29 30>;  // ' + Q bottom-left (left pinky + ring) → sticky LGUI
             bindings = <&sk LEFT_GUI>;
             layers = <0 1>;
         };
 
         combo_comma_en {
             timeout-ms = <40>;
-            key-positions = <17 23>;  // F + J home (index mirror) → COMMA → , on EN layout
+            key-positions = <17 23>;  // U + H home (index mirror) → COMMA → , on EN layout
             bindings = <&kp COMMA>;
             layers = <1>;
         };
 
         combo_comma_ru {
             timeout-ms = <40>;
-            key-positions = <17 23>;  // F + J home (index mirror) → LS(FSLH) → , on Russian Mac
+            key-positions = <17 23>;  // U + H home (index mirror) → LS(FSLH) → , on Russian Mac
             bindings = <&kp LS(FSLH)>;
             layers = <0>;
         };
 
         combo_question_en {
             timeout-ms = <40>;
-            key-positions = <15 25>;  // S + L home (ring mirror) → LS(FSLH) → ? on EN
+            key-positions = <15 25>;  // O + N home (ring mirror) → LS(FSLH) → ? on EN
             bindings = <&kp LS(FSLH)>;
             layers = <1>;
         };
 
         combo_question_ru {
             timeout-ms = <40>;
-            key-positions = <15 25>;  // S + L home (ring mirror) → LS(NUMBER_7) → ? on Russian Mac
+            key-positions = <15 25>;  // O + N home (ring mirror) → LS(NUMBER_7) → ? on Russian Mac
             bindings = <&kp LS(NUMBER_7)>;
             layers = <0>;
         };
 
         combo_colon_en {
             timeout-ms = <40>;
-            key-positions = <18 22>;  // G + H home (inner index mirror) → LS(SEMI) → : on EN
+            key-positions = <18 22>;  // I + D home (inner index mirror) → LS(SEMI) → : on EN
             bindings = <&kp LS(SEMI)>;
             layers = <1>;
         };
 
         combo_colon_ru {
             timeout-ms = <40>;
-            key-positions = <18 22>;  // G + H home (inner index mirror) → LS(NUMBER_6) → : on Russian Mac
+            key-positions = <18 22>;  // I + D home (inner index mirror) → LS(NUMBER_6) → : on Russian Mac
             bindings = <&kp LS(NUMBER_6)>;
             layers = <0>;
         };
 
         combo_eh_ru {
             timeout-ms = <40>;
-            key-positions = <11 26>;  // DVP L + S (right pinky vertical) → SQT → э on Russian Mac; was SPEC + hold S
+            key-positions = <11 26>;  // L + S (right pinky vertical) → SQT → э on Russian Mac; was SPEC + hold S
             bindings = <&kp SQT>;
             layers = <0>;
         };
 
         combo_yo_ru {
             timeout-ms = <40>;
-            key-positions = <1 14>;   // DVP ; + A (left pinky vertical) → GRAVE → ё on Russian Mac; was SPEC + hold ;
+            key-positions = <1 14>;   // ; + A (left pinky vertical) → GRAVE → ё on Russian Mac; was SPEC + hold ;
             bindings = <&kp GRAVE>;
             layers = <0>;
         };
 
         combo_caps_word {
             timeout-ms = <40>;
-            key-positions = <33 36>;  // B + N bottom-inner-index → caps_word (auto-off on space)
+            key-positions = <33 36>;  // X + B bottom-inner-index → caps_word (auto-off on space)
             bindings = <&caps_word>;
             layers = <0 1>;
         };
 
         combo_tilde {
             timeout-ms = <40>;
-            key-positions = <3 9>;    // E + I top row (left middle + right ring) → ~ in EN, Ё in RU
+            key-positions = <3 9>;    // . + C top row (middle mirror) → ~ in EN, Ё in RU
             bindings = <&kp LS(GRAVE)>;
             layers = <0 1>;
         };
