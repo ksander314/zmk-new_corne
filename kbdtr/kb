@@ -726,6 +726,9 @@ def iter_log(days=None):
             except ValueError:
                 continue
             logged, key = row["layout"], row["key"]
+            if row["event"] == "layout":     # an input source switch, not a key
+                current = key if key in OS_LAYOUTS else current
+                continue
             if row["event"] == "backspace":
                 event, value = "char", "\b"
             elif row["event"] == "char":
