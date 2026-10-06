@@ -18,6 +18,7 @@ Needs `uv` (runs the script and keymap-drawer) and `gh`. Paths can be overridden
 
 ## Cheat sheet
 
-`~/.hammerspoon/init.lua` binds Cmd+Alt+A to a search over `out/index.json`: type a
-character or its Unicode name (`&`, `brace`, `э`) to see how to type it in the current
-input source. Enter copies the character.
+`hammerspoon.lua` binds Cmd+Alt+A to a search over `out/index.json`: type a character or
+its Unicode name (`&`, `brace`, `э`) to see how to type it in the current input source.
+Enter copies the character. `~/.hammerspoon/init.lua` loads it with
+`dofile(os.getenv("HOME") .. "/src/kbdtr/hammerspoon.lua")`.
