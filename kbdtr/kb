@@ -894,7 +894,9 @@ def gh(*a, check=True):
 
 
 def cmd_fetch(args):
-    sha = git("rev-parse", "HEAD")
+    # The newest commit CI builds: build.yml ignores keymap-drawer/**, which is
+    # all the "[Draw]" commit after every keymap push touches.
+    sha = git("log", "-1", "--format=%H", "--", ".", ":!keymap-drawer")
     short = sha[:7]
     dest = FIRMWARE / short
     if list(dest.glob("*.uf2")):
@@ -922,10 +924,31 @@ def cmd_fetch(args):
         else:
             sys.exit("Сборка не появилась за 90 с, проверь `gh run list`.")
     print(f"Жду сборку {rid} для {short}…", flush=True)
-    if subprocess.run(["gh", "run", "watch", rid, "--exit-status", "--interval", "10"], cwd=REPO).returncode:
-        sys.exit(f"Сборка упала: gh run view {rid} --log-failed")
+    # `gh run watch` also exits non-zero when the connection to GitHub drops,
+    # so the verdict comes from the run itself.
+    for _ in range(30):
+        subprocess.run(["gh", "run", "watch", rid, "--exit-status", "--interval", "10"], cwd=REPO)
+        state = gh("run", "view", rid, "--json", "status,conclusion", "-q", '.status + " " + .conclusion',
+                   check=False)
+        if state == "completed success":
+            break
+        if state.startswith("completed"):
+            sys.exit(f"Сборка упала ({state.split()[-1]}): gh run view {rid} --log-failed")
+        print("Связь с GitHub оборвалась, жду дальше…", flush=True)
+        time.sleep(10)
+    else:
+        sys.exit(f"Не дождался сборки {rid}: gh run view {rid}")
     dest.mkdir(parents=True, exist_ok=True)
-    gh("run", "download", rid, "-n", "firmware", "-D", str(dest))
+    for _ in range(3):
+        for f in dest.glob("*.uf2"):     # gh run download refuses to overwrite
+            f.unlink()
+        if subprocess.run(["gh", "run", "download", rid, "-n", "firmware", "-D", str(dest)],
+                          cwd=REPO).returncode == 0:
+            break
+        print("Скачать не вышло, пробую ещё раз…", flush=True)
+        time.sleep(5)
+    else:
+        sys.exit(f"Не скачалось: gh run download {rid} -n firmware -D {dest}")
     for f in sorted(dest.glob("*.uf2")):
         print(f"  {f}")
     return dest
