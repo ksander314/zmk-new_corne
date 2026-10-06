@@ -6,7 +6,9 @@
 ;;
 ;; `kbdtr-find' searches a char by itself or its Unicode name (&, brace, э),
 ;; shows how to type it and copies it: the rows of the Cmd+Alt+A cheat sheet.
-;; `kbdtr-layers' shows the layers that type in the current input source.
+;; `kbdtr-layers' shows the layers that type in the current input source;
+;; there h tints the keys by how often the keystroke log says they are
+;; pressed, and g runs kb index to recount.
 ;;
 ;; Nothing here needs macOS.  The input source comes from the keystroke
 ;; logger when Hammerspoon pushes it there (~/.emacs.d/lisp/init-keystroke-log.el),
@@ -72,26 +74,79 @@ The ways are for the current input source; with OTHER
     ("^▽.*" . 'shadow))                 ; the legend
   "Faces of *kbdtr*.  Keywords only: a \" key must not start a string.")
 
+(defvar-local kbdtr--layers-heat nil
+  "Non-nil when *kbdtr* tints keys and combos by how often they are pressed.")
+
 (defvar-keymap kbdtr-layers-mode-map
   :parent special-mode-map
   "l" #'kbdtr-layers-other-source
+  "h" #'kbdtr-layers-heat
   "f" #'kbdtr-find)
 
 (define-derived-mode kbdtr-layers-mode special-mode "kbdtr"
   "The keymap's layers as text, as they type in one input source."
   (setq truncate-lines t
-        header-line-format " l — другая раскладка   f — найти символ   g — перечитать   q — закрыть")
+        header-line-format (concat " l — другая раскладка   h — частота нажатий"
+                                   "   f — найти символ   g — пересчитать   q — закрыть"))
   (setq-local font-lock-defaults '(kbdtr--layers-font-lock t)
-              revert-buffer-function (lambda (&rest _) (kbdtr--layers-show kbdtr--layers-source))))
+              ;; Tap lines keep trailing spaces, so the rightmost keys tint whole.
+              show-trailing-whitespace nil
+              revert-buffer-function (lambda (&rest _) (kbdtr-layers-refresh))))
 
 (defun kbdtr--layers-show (source)
   "Fill the current buffer with the layers that type in SOURCE."
-  (let ((inhibit-read-only t)
-        (pos (point)))
+  (let* ((inhibit-read-only t)
+         (pos (point))
+         (data (kbdtr--read "layers.json"))
+         (view (alist-get (intern source) data)))
     (erase-buffer)
-    (insert (alist-get (intern source) (kbdtr--read "layers.json")))
+    (remove-overlays)
+    (insert (alist-get 'text view))
+    (when kbdtr--layers-heat
+      (kbdtr--tint (alist-get 'cells view) (alist-get 'colors data)))
     (goto-char (min pos (point-max)))
     (setq kbdtr--layers-source source)))
+
+(defun kbdtr--tint (cells colors)
+  "Tint CELLS, lists (LINE COL WIDTH INDEX), with COLORS, light to dark.
+LINE counts from 0 and COL in chars, as kb writes them."
+  (save-excursion
+    (dolist (cell cells)
+      (pcase-let ((`(,line ,col ,width ,i) cell))
+        (goto-char (point-min))
+        (forward-line line)
+        (overlay-put (make-overlay (+ (point) col) (+ (point) col width))
+                     'face (list :background (nth i colors)
+                                 :foreground (if (< i 5) "black" "white")))))))
+
+(defun kbdtr-layers-heat ()
+  "Tint keys and combos by how often they are pressed, or stop tinting."
+  (interactive)
+  (setq kbdtr--layers-heat (not kbdtr--layers-heat))
+  (kbdtr--layers-show kbdtr--layers-source)
+  (message (if kbdtr--layers-heat
+               "Чем темнее, тем чаще клавиша нажата на своём слое (по логу Emacs, на момент kb index)"
+             "Подсветка выключена")))
+
+(defun kbdtr-layers-refresh ()
+  "Run kb index for fresh press counts, then show the layers again."
+  (interactive)
+  (let ((buf (current-buffer))
+        (out (get-buffer-create " *kb index*")))
+    (with-current-buffer out (erase-buffer))
+    (message "kb index…")
+    (make-process
+     :name "kb index" :buffer out
+     :command (list (expand-file-name "kb" kbdtr-dir) "index")
+     :sentinel (lambda (proc _event)
+                 (unless (process-live-p proc)
+                   (cond ((/= (process-exit-status proc) 0)
+                          (message "kb index упал: %s"
+                                   (with-current-buffer out (string-trim (buffer-string)))))
+                         ((buffer-live-p buf)
+                          (with-current-buffer buf
+                            (kbdtr--layers-show kbdtr--layers-source))
+                          (message "kb index: готово"))))))))
 
 (defun kbdtr-layers (&optional other)
   "Show the layers as they type in the current input source.

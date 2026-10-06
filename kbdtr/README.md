@@ -26,6 +26,8 @@ Enter copies the character. `~/.hammerspoon/init.lua` loads it with
 
 `kbdtr.el` does the same in Emacs, on macOS and Linux alike: `C-c K` (`kbdtr-find`) is
 the search, `C-c L` (`kbdtr-layers`) shows the layers that type in the current input
-source; there `l` switches to the other source and `f` searches. The source comes from
+source; there `l` switches to the other source, `f` searches, `h` tints the keys and
+combos by how often the keystroke log says they are pressed, and `g` reruns `kb index`
+to recount. The source comes from
 the keystroke log's Hammerspoon feed on macOS, else from the last letter before point.
 `~/.emacs.d/init.el` loads it when `~/src/kbdtr/kbdtr.el` exists.

@@ -235,6 +235,8 @@ FINGERS = ["мизинец", "безымянный", "средний", "указ
 ROWS = [(0, 12, "верхний ряд"), (13, 27, "домашний ряд"), (28, 41, "нижний ряд")]
 CENTER = {6: "5-way вверх", 19: "5-way влево", 20: "5-way нажатие", 21: "5-way вправо",
           34: "энкодер", 35: "5-way вниз"}
+# The encoder footprint: no encoder is fitted, so the layers view leaves it out.
+ABSENT = {34}
 
 
 def pos_info(p):
@@ -575,7 +577,9 @@ def write_index():
     OUT.mkdir(exist_ok=True)
     km = load_keymap()
     INDEX.write_text(json.dumps(index_rows(km), ensure_ascii=False, indent=1))
-    LAYERS.write_text(json.dumps({l: layers_text(km, l) for l in OS_LAYOUTS}, ensure_ascii=False, indent=1))
+    counts = read_log(None)[0] if KLOG.exists() else {}
+    views = {l: layers_view(km, l, counts) for l in OS_LAYOUTS}
+    LAYERS.write_text(json.dumps({"colors": HEAT_COLORS, **views}, ensure_ascii=False, indent=1))
     return INDEX, LAYERS
 
 
@@ -642,62 +646,82 @@ def binding_labels(km, layout, b):
 
 def layer_grid(km, layout, layer):
     """One layer as text, keys where config/eyelash_corne.json puts them: per key
-    row a line of taps and a line of holds."""
+    row a line of taps and a line of holds. Also the cells of the keys,
+    (line, col, width, pos): the CELL - 1 columns of the tap line a key takes."""
     geometry = json.loads(LAYOUT_JSON.read_text())["layouts"]["default_layout"]["layout"]
     rows = collections.defaultdict(list)
     for p, g in enumerate(geometry):
+        if p in ABSENT:
+            continue
         b = km.layers[layer][p]
         labels = ("", "") if b.behavior == "trans" and layer == 0 else binding_labels(km, layout, b)
         # Half up, not round(): banker's rounding spaces x.5 keys unevenly.
-        rows[g["row"]].append((int(g["x"] * CELL + 0.5), *labels))
-    lines = []
+        rows[g["row"]].append((int(g["x"] * CELL + 0.5), p, *labels))
+    lines, cells = [], []
     for r in sorted(rows):
         for i in (1, 2):
-            line = [" "] * (max(col for col, _, _ in rows[r]) + CELL)
-            for col, *labels in rows[r]:
+            line = [" "] * (max(col for col, *_ in rows[r]) + CELL)
+            for col, p, *labels in rows[r]:
                 text = labels[i - 1]
                 start = col + (CELL - 1 - len(text)) // 2
                 line[start:start + len(text)] = text
-            lines.append("".join(line).rstrip())
-    while lines and not lines[-1]:
+                if i == 1 and text:
+                    cells.append((len(lines), col, CELL - 1, p))
+            # Tap lines keep their trailing spaces: the last key's cell is tinted whole.
+            lines.append("".join(line) if i == 1 else "".join(line).rstrip())
+    while lines and not lines[-1].strip():
         lines.pop()
-    return lines
+    return lines, cells
 
 
 def combos_lines(km, layout, layer, width):
-    """Combos active on `layer`: 'J+W →EN   O+N ?   …', wrapped at `width`."""
-    items = []
-    for c in km.combos:
-        if c.active_on(layer):
-            tap, hold = binding_labels(km, layout, c.binding)
-            keys = "+".join(pos_label(km, p) for p in c.positions)
-            items.append(f"{keys} {tap}/{hold}" if hold else f"{keys} {tap}")
-    lines, line = [], "combo "
-    for item in items:
+    """Combos active on `layer`: 'J+W →EN   O+N ?   …', wrapped at `width`.
+    Also their cells, (line, col, width, combo index)."""
+    lines, cells, line = [], [], "combo "
+    for i, c in enumerate(km.combos):
+        if not c.active_on(layer):
+            continue
+        tap, hold = binding_labels(km, layout, c.binding)
+        keys = "+".join(pos_label(km, p) for p in c.positions)
+        item = f"{keys} {tap}/{hold}" if hold else f"{keys} {tap}"
         if len(line) + len(item) > width and line.strip() != "combo":
             lines.append(line.rstrip())
             line = "      "
+        cells.append((len(lines), len(line), len(item), i))
         line += item + "   "
-    if items:
+    if cells:
         lines.append(line.rstrip())
-    return lines
+    return lines, cells
 
 
-def layers_text(km, layout):
-    """The layers that type in `layout` (its base, SPEC, BTWN) as one text."""
+def layers_view(km, layout, counts):
+    """The layers that type in `layout` (its base, SPEC, BTWN) as one text, and
+    the cells of its keys and combos to tint by how often they are pressed:
+    [line, col, width, HEAT_COLORS index], from the `layout` rows of `counts`."""
+    keys, combos, _ = heat({k: n for k, n in counts.items() if k[1] == layout}, km)
+    vmax = collections.defaultdict(lambda: 1.0)
+    for (layer, _), v in [*keys.items(), *combos.items()]:
+        vmax[layer] = max(vmax[layer], v)
     base = OS_LAYOUTS[layout]
-    blocks = []
+    lines, cells = [], []
     for layer in [base] + [l for l in range(len(km.layers)) if l not in OS_LAYOUTS.values()]:
-        grid = layer_grid(km, layout, layer)
-        title = km.layer_names[layer] + (f" · {layout}" if layer in (base, SPEC) else "")
-        blocks.append("\n".join([title, *grid, *combos_lines(km, layout, layer, max(map(len, grid)))]))
-    return "\n\n".join(blocks + [LEGEND]) + "\n"
+        if lines:
+            lines.append("")
+        lines.append(km.layer_names[layer] + (f" · {layout}" if layer in (base, SPEC) else ""))
+        grid, grid_cells = layer_grid(km, layout, layer)
+        cells += [[len(lines) + l, c, w, bucket(keys[(layer, p)], vmax[layer])] for l, c, w, p in grid_cells]
+        lines += grid
+        clines, ccells = combos_lines(km, layout, layer, max(len(l.rstrip()) for l in grid))
+        cells += [[len(lines) + l, c, w, bucket(combos[(layer, i)], vmax[layer])] for l, c, w, i in ccells]
+        lines += clines
+    lines += ["", LEGEND]
+    return {"text": "\n".join(lines) + "\n", "cells": [c for c in cells if c[3] is not None]}
 
 
 def cmd_layers(args):
     layouts = [OS_LAYOUT_ALIASES[args.layout]] if args.layout else list(OS_LAYOUTS)
     km = load_keymap()
-    print("\n".join(layers_text(km, layout) for layout in layouts), end="")
+    print("\n".join(layers_view(km, layout, {})["text"] for layout in layouts), end="")
 
 
 # ---------------------------------------------------------------- heatmap
