@@ -1,11 +1,12 @@
 ;;; kbdtr.el --- Eyelash Corne keymap in Emacs: a cheat sheet and the layers -*- lexical-binding: t -*-
 
-;; Reads what ./kb writes after every flash and on `./kb index':
+;; The interface of kbdtr: ./kb does the work, this shows it.  It reads what
+;; ./kb writes after every flash and on `./kb index':
 ;;   out/index.json   how to type each char, per input source
 ;;   out/layers.json  the layers as text, per input source
 ;;
 ;; `kbdtr-find' searches a char by itself or its Unicode name (&, brace, э),
-;; shows how to type it and copies it: the rows of the Cmd+Alt+A cheat sheet.
+;; shows how to type it and copies it.
 ;; `kbdtr-layers' shows the layers that type in the current input source;
 ;; there h tints the keys by how often the keystroke log says they are
 ;; pressed, and g runs kb index to recount.
@@ -61,12 +62,12 @@ The ways are for the current input source; with OTHER
     (let* ((completion-extra-properties
             (list :annotation-function
                   (lambda (text)
-                    (concat "   " (propertize (alist-get 'subText (gethash text rows))
+                    (concat "   " (propertize (alist-get 'how (gethash text rows))
                                               'face 'completions-annotations)))))
            (row (gethash (completing-read (format "Как набрать (%s): " source) rows nil t)
                          rows)))
       (kill-new (alist-get 'char row))
-      (message "%s   %s" (alist-get 'text row) (alist-get 'subText row)))))
+      (message "%s   %s" (alist-get 'text row) (alist-get 'how row)))))
 
 (defconst kbdtr--layers-font-lock
   '(("^[[:upper:]].*" . 'bold)          ; layer titles: "QWERTY · RussianWin"
