@@ -47,21 +47,13 @@ The `J + W` combo (both middle fingers, bottom row) switches to the other langua
 
 #### macOS
 
-Install [Hammerspoon](https://www.hammerspoon.org/) (`brew install --cask hammerspoon`) and add to `~/.hammerspoon/init.lua`:
+Install [Hammerspoon](https://www.hammerspoon.org/) (`brew install --cask hammerspoon`) and link its config from this repo:
 
-```lua
-require("hs.ipc")
-
-local hyper = {"cmd", "alt", "ctrl", "shift"}
-
-hs.hotkey.bind(hyper, "1", function()
-    hs.keycodes.setLayout("ABC")
-end)
-
-hs.hotkey.bind(hyper, "2", function()
-    hs.keycodes.setLayout("Russian – PC")
-end)
+```sh
+ln -sf "$PWD/hammerspoon/init.lua" ~/.hammerspoon/init.lua
 ```
+
+[`hammerspoon/init.lua`](hammerspoon/init.lua) sets the input source on `Hyper+1` / `Hyper+2` and reports every switch to Emacs (`my/klog-set-layout`, when Emacs defines it).
 
 #### Linux (GNOME)
 
