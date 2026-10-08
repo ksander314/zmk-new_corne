@@ -1,0 +1,1130 @@
+#!/usr/bin/env python3
+"""kb — the command-line half of kbdtr, the console of the eyelash_corne keyboard
+whose keymap lives in ~/src/zmk-new_corne; kbdtr.el is the Emacs half.
+
+  kb find CHARS [--layout abc|ru]   how to type a character
+  kb layers [--layout abc|ru]       the layers as text, as they type in an input source
+  kb index                          out/index.json and out/layers.json for kbdtr.el
+  kb heatmap [--days N]             the busiest keys and combos, by the Emacs keystroke log
+  kb bigrams [--days N]             slowest pairs of consecutive keystrokes
+  kb fetch                          wait for the CI build of HEAD, download firmware
+  kb flash left|right               copy firmware to a half in bootloader mode
+"""
+
+import argparse
+import collections
+import csv
+import functools
+import glob
+import json
+import math
+import os
+import re
+import shutil
+import statistics
+import subprocess
+import sys
+import time
+import unicodedata
+from dataclasses import dataclass, field
+from pathlib import Path
+
+REPO = Path(os.environ.get("KB_REPO", "~/src/zmk-new_corne")).expanduser()
+KEYMAP = REPO / "config/eyelash_corne.keymap"
+LAYOUT_JSON = REPO / "config/eyelash_corne.json"
+KLOG = Path(os.environ.get("KB_KLOG", "~/.emacs.d/keystroke-log.csv")).expanduser()
+HOME = Path(__file__).resolve().parent
+OUT = HOME / "out"
+FIRMWARE = HOME / "firmware"
+# How to type each char, read by kbdtr-find (kbdtr.el).
+INDEX = OUT / "index.json"
+# The layers as text, read by kbdtr-layers (kbdtr.el).
+LAYERS = OUT / "layers.json"
+
+# Base layer used with each macOS input source (README "My setup").
+# Keys are the `layout` values written by ~/.emacs.d/lisp/init-keystroke-log.el.
+OS_LAYOUTS = {"ABC": 1, "RussianWin": 0}
+OS_LAYOUT_ALIASES = {"abc": "ABC", "en": "ABC", "ru": "RussianWin", "russian": "RussianWin"}
+SPEC = 2
+
+# From this moment ~/.hammerspoon/init.lua pushes every input source switch
+# into the log (~/.emacs.d commit b15ea6c). Before it the `layout` column lagged
+# behind switches by a whole typing burst.
+LAYOUT_RELIABLE_SINCE_MS = 1790959759000   # 2026-10-02 20:49:19 +04
+
+# ---------------------------------------------------------------- keycodes
+
+# ZMK name -> (canonical US key, implicit shift)
+ALIASES = {
+    **{f"NUMBER_{i}": (f"N{i}", False) for i in range(10)},
+    **{f"N{i}": (f"N{i}", False) for i in range(10)},
+    "MINUS": ("MINUS", False), "EQUAL": ("EQUAL", False),
+    "LEFT_BRACKET": ("LBKT", False), "LBKT": ("LBKT", False),
+    "RIGHT_BRACKET": ("RBKT", False), "RBKT": ("RBKT", False),
+    "BACKSLASH": ("BSLH", False), "BSLH": ("BSLH", False),
+    "SEMI": ("SEMI", False), "SEMICOLON": ("SEMI", False),
+    "SQT": ("SQT", False), "APOS": ("SQT", False), "APOSTROPHE": ("SQT", False),
+    "SINGLE_QUOTE": ("SQT", False),
+    "GRAVE": ("GRAVE", False), "COMMA": ("COMMA", False),
+    "DOT": ("DOT", False), "PERIOD": ("DOT", False),
+    "FSLH": ("FSLH", False), "SLASH": ("FSLH", False),
+    "SPACE": ("SPACE", False), "SPC": ("SPACE", False), "TAB": ("TAB", False),
+    "BSPC": ("BSPC", False), "BACKSPACE": ("BSPC", False),
+    "ENTER": ("ENTER", False), "RET": ("ENTER", False), "RETURN": ("ENTER", False),
+    "LEFT_BRACE": ("LBKT", True), "LBRC": ("LBKT", True),
+    "RIGHT_BRACE": ("RBKT", True), "RBRC": ("RBKT", True),
+    "PLUS": ("EQUAL", True), "UNDERSCORE": ("MINUS", True), "UNDER": ("MINUS", True),
+    "TILDE": ("GRAVE", True), "EXCLAMATION": ("N1", True), "EXCL": ("N1", True),
+    "AT_SIGN": ("N2", True), "AT": ("N2", True), "HASH": ("N3", True), "POUND": ("N3", True),
+    "DOLLAR": ("N4", True), "DLLR": ("N4", True), "PERCENT": ("N5", True), "PRCNT": ("N5", True),
+    "CARET": ("N6", True), "AMPERSAND": ("N7", True), "AMPS": ("N7", True),
+    "ASTERISK": ("N8", True), "ASTRK": ("N8", True), "STAR": ("N8", True),
+    "LEFT_PARENTHESIS": ("N9", True), "LPAR": ("N9", True),
+    "RIGHT_PARENTHESIS": ("N0", True), "RPAR": ("N0", True),
+    "PIPE": ("BSLH", True), "COLON": ("SEMI", True),
+    "DOUBLE_QUOTES": ("SQT", True), "DQT": ("SQT", True),
+    "LESS_THAN": ("COMMA", True), "LT": ("COMMA", True),
+    "GREATER_THAN": ("DOT", True), "GT": ("DOT", True),
+    "QUESTION": ("FSLH", True), "QMARK": ("FSLH", True),
+}
+for _c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+    ALIASES[_c] = (_c, False)
+
+_US = {
+    "GRAVE": "`~", "N1": "1!", "N2": "2@", "N3": "3#", "N4": "4$", "N5": "5%",
+    "N6": "6^", "N7": "7&", "N8": "8*", "N9": "9(", "N0": "0)", "MINUS": "-_",
+    "EQUAL": "=+", "LBKT": "[{", "RBKT": "]}", "BSLH": "\\|", "SEMI": ";:",
+    "SQT": "'\"", "COMMA": ",<", "DOT": ".>", "FSLH": "/?",
+}
+# macOS "Russian – PC" (input source id RussianWin), by US key position.
+_RU = {
+    "GRAVE": "ёЁ", "N1": "1!", "N2": "2\"", "N3": "3№", "N4": "4;", "N5": "5%",
+    "N6": "6:", "N7": "7?", "N8": "8*", "N9": "9(", "N0": "0)", "MINUS": "-_",
+    "EQUAL": "=+", "LBKT": "хХ", "RBKT": "ъЪ", "BSLH": "\\/", "SEMI": "жЖ",
+    "SQT": "эЭ", "COMMA": "бБ", "DOT": "юЮ", "FSLH": ".,",
+}
+_RU_LETTERS = dict(zip("QWERTYUIOPASDFGHJKLZXCVBNM", "йцукенгшщзфывапролдячсмить"))
+_COMMON = {"SPACE": "  ", "TAB": "\t\t", "BSPC": "\b\b", "ENTER": "\n\n"}
+
+
+def _table(punct, letters):
+    t = dict(_COMMON)
+    t.update(punct)
+    for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
+        low = letters.get(c, c.lower())
+        t[c] = low + low.upper()
+    return t
+
+
+CHARS = {"ABC": _table(_US, {}), "RussianWin": _table(_RU, _RU_LETTERS)}
+
+CHAR_NAMES = {" ": "SPC", "\t": "TAB", "\b": "BSPC", "\n": "RET"}
+
+# ZMK modifier key -> modifier
+MODIFIERS = {
+    **dict.fromkeys(("LEFT_SHIFT", "RIGHT_SHIFT", "LSHIFT", "RSHIFT", "LSHFT", "RSHFT"), "shift"),
+    **dict.fromkeys(("LEFT_CONTROL", "RIGHT_CONTROL", "LCTRL", "RCTRL"), "ctrl"),
+    **dict.fromkeys(("LEFT_ALT", "RIGHT_ALT", "LALT", "RALT"), "alt"),
+    **dict.fromkeys(("LEFT_GUI", "RIGHT_GUI", "LGUI", "RGUI", "LEFT_COMMAND", "RIGHT_COMMAND",
+                     "LCMD", "RCMD", "LEFT_WIN", "RIGHT_WIN", "LWIN", "RWIN",
+                     "LEFT_META", "RIGHT_META", "LMETA", "RMETA"), "gui"),
+}
+
+
+@dataclass(frozen=True)
+class Keycode:
+    key: str            # canonical US key, or the raw ZMK name if unknown
+    shift: bool
+    other_mods: bool    # Ctrl/Alt/GUI present -> not a printable char
+
+    def char(self, layout, extra_shift=False):
+        if self.other_mods or self.key not in CHARS[layout]:
+            return None
+        return CHARS[layout][self.key][1 if (self.shift or extra_shift) else 0]
+
+    @property
+    def modifier(self):
+        """'shift' / 'ctrl' / 'alt' / 'gui' for a bare modifier key, else None."""
+        return None if self.other_mods else MODIFIERS.get(self.key)
+
+
+def parse_keycode(s):
+    mods = []
+    while m := re.fullmatch(r"([LR][SCAG])\((.*)\)", s):
+        mods.append(m.group(1))
+        s = m.group(2)
+    key, implicit = ALIASES.get(s, (s, False))
+    shift = implicit or any(m[1] == "S" for m in mods)
+    return Keycode(key, shift, any(m[1] != "S" for m in mods))
+
+
+# ---------------------------------------------------------------- keymap
+
+@dataclass
+class Binding:
+    behavior: str
+    args: list
+
+    def __str__(self):
+        return " ".join(["&" + self.behavior, *self.args])
+
+
+@dataclass
+class Combo:
+    name: str
+    positions: list
+    binding: Binding
+    layers: list = field(default_factory=list)  # empty = all layers
+
+    def active_on(self, layer):
+        return not self.layers or layer in self.layers
+
+
+@dataclass
+class Keymap:
+    layer_names: list
+    layers: list        # list[list[Binding]]
+    combos: list
+
+
+def _strip_comments(text):
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    return re.sub(r"//[^\n]*", "", text)
+
+
+def _bindings(body):
+    out = []
+    for tok in body.split():
+        if tok.startswith("&"):
+            out.append(Binding(tok[1:], []))
+        elif out:
+            out[-1].args.append(tok)
+    return out
+
+
+def load_keymap(path=KEYMAP):
+    text = _strip_comments(path.read_text())
+    combos = []
+    for m in re.finditer(r"(\w+)\s*\{([^{}]*key-positions[^{}]*)\}", text):
+        body = m.group(2)
+        field_ = lambda k: re.search(rf"\b{k}\s*=\s*<([^>]*)>", body)
+        layers = field_("layers")
+        combos.append(Combo(
+            name=m.group(1),
+            positions=[int(x) for x in field_("key-positions").group(1).split()],
+            binding=_bindings(field_("bindings").group(1))[0],
+            layers=[int(x) for x in layers.group(1).split()] if layers else [],
+        ))
+    km = text[text.index('"zmk,keymap"'):]
+    names, layers = [], []
+    for m in re.finditer(r"(\w+)\s*\{\s*(?:display-name\s*=\s*\"([^\"]*)\";)?\s*bindings\s*=\s*<(.*?)>;",
+                         km, flags=re.S):
+        names.append(m.group(2) or m.group(1))
+        layers.append(_bindings(m.group(3)))
+    return Keymap(names, layers, combos)
+
+
+# ---------------------------------------------------------------- positions
+
+FINGERS = ["мизинец", "безымянный", "средний", "указательный", "указательный (внутр.)"]
+ROWS = [(0, 12, "верхний ряд"), (13, 27, "домашний ряд"), (28, 41, "нижний ряд")]
+CENTER = {6: "5-way вверх", 19: "5-way влево", 20: "5-way нажатие", 21: "5-way вправо",
+          34: "энкодер", 35: "5-way вниз"}
+# The encoder footprint: no encoder is fitted, so the layers view leaves it out.
+ABSENT = {34}
+
+
+def pos_info(p):
+    """(hand, finger, where) of a physical position (config/eyelash_corne.json).
+
+    hand is 'левый' / 'правый', or None for the 5-way and the encoder."""
+    if p in CENTER:
+        return None, None, CENTER[p]
+    if p >= 42:
+        left = p <= 44
+        which = ["внешняя", "средняя", "внутренняя"][p - 42 if left else 47 - p]
+        return ("левый" if left else "правый"), "большой", which
+    lo, hi, row = next(r for r in ROWS if r[0] <= p <= r[1])
+    col, right = p - lo, hi - p      # counted from the left / right outer edge
+    if col == 0 or right == 0:
+        return ("левый" if col == 0 else "правый"), "мизинец", f"крайняя колонка, {row}"
+    if col <= 5:
+        return "левый", FINGERS[col - 1], row
+    return "правый", FINGERS[right - 1], row
+
+
+def describe_pos(p):
+    """Human description of a physical position: 'левый безымянный, домашний ряд'."""
+    hand, finger, where = pos_info(p)
+    if hand is None or where.startswith("крайняя"):
+        return where
+    return f"{hand} {finger}, {where}"
+
+
+def cap_label(binding):
+    """What is printed on the key in a base layer: 'S', ';', 'Esc'."""
+    if binding is None or binding.behavior in ("none", "trans"):
+        return "·"
+    if binding.behavior in ("kp", "mt", "lt") and binding.args:
+        kc = parse_keycode(binding.args[-1])
+        ch = kc.char("ABC")
+        if ch and ch.isprintable() and ch.strip():
+            return ch.upper()
+        return kc.key.title()
+    return str(binding)
+
+
+# Keys are named by what the DVP layer prints on them, in both input sources:
+# that is the map the user keeps in their head ('O', not QWERTY 'S').
+NAMING_LAYER = OS_LAYOUTS["ABC"]
+
+
+def pos_label(km, p):
+    """A key as the user knows it: 'O', ';', 'Space'."""
+    return cap_label(km.layers[NAMING_LAYER][p])
+
+
+# ---------------------------------------------------------------- ways
+
+@dataclass
+class Way:
+    steps: list          # human-readable steps
+    presses: list        # ("key", layer, pos) | ("combo", layer, combo_index)
+
+    @property
+    def cost(self):
+        return len(self.steps)
+
+
+def resolve(km, layer, pos):
+    b = km.layers[layer][pos]
+    while b.behavior == "trans" and layer > 0:
+        layer -= 1
+        b = km.layers[layer][pos]
+    return b
+
+
+def outputs(binding):
+    """(kind, Keycode) pairs a binding can send: kind is 'тап' or 'удержание'."""
+    a = binding.args
+    if binding.behavior == "kp" and a:
+        return [("тап", parse_keycode(a[0]))]
+    if binding.behavior == "mt" and len(a) == 2:
+        return [("тап", parse_keycode(a[1])), ("удержание", parse_keycode(a[0]))]
+    if binding.behavior == "lt" and len(a) == 2:
+        return [("тап", parse_keycode(a[1]))]
+    return []
+
+
+def held_modifier(binding):
+    """Modifier a binding holds: &kp LALT, &sk LEFT_GUI, the hold of &mt LCTRL SPACE."""
+    if binding.behavior in ("kp", "sk", "mt") and binding.args:
+        return parse_keycode(binding.args[0]).modifier
+    return None
+
+
+def is_shift(binding):
+    return binding.behavior in ("sk", "kp") and held_modifier(binding) == "shift"
+
+
+def combo_text(km, c):
+    caps = " + ".join(pos_label(km, p) for p in c.positions)
+    return f"combo {c.name} ({caps})"
+
+
+def ways_for(km, layout, char):
+    """Ways to type `char` with the macOS input source `layout`, cheapest first."""
+    return _ways(km, layout, lambda kc, shift: kc.char(layout, extra_shift=shift) == char)
+
+
+def ways_for_key(km, layout, key):
+    """Ways to press a key that is not a character: 'ENTER', 'LEFT', 'F5'…"""
+    return _ways(km, layout,
+                 lambda kc, shift: not shift and not kc.shift and not kc.other_mods and kc.key == key)
+
+
+def _ways(km, layout, match):
+    """Ways to send what `match(keycode, extra_shift)` accepts, cheapest first."""
+    base = OS_LAYOUTS[layout]
+    spec_pos = next((p for p, b in enumerate(km.layers[base])
+                     if b.behavior == "lt" and b.args[:1] == [str(SPEC)]), None)
+    contexts = [(base, [], [])]
+    if spec_pos is not None:
+        contexts.append((SPEC, [f"держать {km.layer_names[SPEC]}: {describe_pos(spec_pos)} "
+                                f"[{pos_label(km, spec_pos)}]"],
+                         [("key", base, spec_pos)]))
+    found = []
+    for layer, pre_steps, pre_presses in contexts:
+        sources = []   # (step text, presses, binding)
+        for p in range(len(km.layers[layer])):
+            b = resolve(km, layer, p)
+            sources.append((f"{describe_pos(p)} [{pos_label(km, p)}]", [("key", layer, p)], b))
+        for i, c in enumerate(km.combos):
+            if c.active_on(layer):
+                sources.append((combo_text(km, c), [("combo", layer, i)], c.binding))
+        shifts = [(f"Shift: {text}", presses) for text, presses, b in sources if is_shift(b)]
+        for text, presses, b in sources:
+            for kind, kc in outputs(b):
+                if match(kc, False):
+                    found.append(Way(pre_steps + [f"{kind}: {text}"], pre_presses + presses))
+                elif not kc.shift and match(kc, True):
+                    for s_text, s_presses in shifts:
+                        found.append(Way(pre_steps + [s_text, f"{kind}: {text}"],
+                                         pre_presses + s_presses + presses))
+    found.sort(key=lambda w: w.cost)
+    return found
+
+
+def shortest(ways):
+    return [w for w in ways if w.cost == ways[0].cost] if ways else []
+
+
+def physical(km, presses):
+    """Physical key positions behind a list of presses."""
+    out = set()
+    for kind, _, idx in presses:
+        out.update([idx] if kind == "key" else km.combos[idx].positions)
+    return out
+
+
+# ---------------------------------------------------------------- chords
+
+# Emacs modifier -> Mac modifier key, as set in the running Emacs:
+# ns-control-modifier = control, ns-alternate-modifier = meta,
+# ns-command-modifier = super; the right-hand ones are `left`, i.e. the same.
+EMACS_MODS = {"C": "ctrl", "M": "alt", "s": "gui", "S": "shift"}
+
+# Emacs key names (key-description) -> ZMK key
+EMACS_KEYS = {
+    "RET": "ENTER", "<return>": "ENTER", "TAB": "TAB", "<tab>": "TAB", "SPC": "SPACE",
+    "DEL": "BSPC", "<backspace>": "BSPC", "ESC": "ESCAPE", "<escape>": "ESCAPE",
+    "<left>": "LEFT", "<right>": "RIGHT", "<up>": "UP", "<down>": "DOWN",
+    "<deletechar>": "DELETE", "<delete>": "DELETE", "<next>": "PAGE_DOWN", "<insert>": "INSERT",
+    "<print>": "PRINTSCREEN", **{f"<f{i}>": f"F{i}" for i in range(1, 13)},
+}
+
+# Chords typed with Russian – PC reach Emacs translated to Latin by reverse-im,
+# which is built from this input method (~/.emacs.d/init.el:203)…
+IM_METHOD = Path("~/.emacs.d/lisp/cyrillic-dvorak-programming.el").expanduser()
+# …plus the two translations added by hand at ~/.emacs.d/init.el:208-209.
+CHORD_EXTRA_RU = {"/": ".", "?": ","}   # C-. -> C-/, C-, -> C-?
+
+EMACS_EVENT = re.compile(r"((?:[ACHMSs]-)*)(.+)")
+EMACS_EVENT_ALIASES = {"<backtab>": "S-TAB"}
+# Chord rows that do not come from the keyboard.
+NOT_KEYBOARD = re.compile(r"mouse|wheel|menu-bar|tool-bar|tab-bar|<ns-")
+
+
+@functools.cache
+def reverse_im():
+    """Latin char of a logged chord -> the Cyrillic char really typed.
+
+    From the quail rules of IM_METHOD. Rules whose target is ASCII are left
+    out: reverse-im does not translate those (~/.emacs.d/init.el:204)."""
+    if not IM_METHOD.exists():
+        return {}
+    out = {}
+    for m in re.finditer(r'\("((?:\\.|[^"\\])+)"\s+\?(\\.|.)\)', IM_METHOD.read_text()):
+        key = re.sub(r"\\(.)", r"\1", m.group(1))
+        target = m.group(2)[-1]
+        if len(key) == 1 and not target.isascii():
+            out[key] = target
+    return out
+
+
+def chord_chars(layout, ch):
+    """Chars the OS may have sent for a chord logged with `ch` as its key."""
+    if layout != "RussianWin":
+        return [ch]
+    return [c for c in (reverse_im().get(ch), CHORD_EXTRA_RU.get(ch), ch) if c]
+
+
+def modifier_sources(km, base):
+    """modifier -> press lists that hold it on the base layer."""
+    out = collections.defaultdict(list)
+    for p, b in enumerate(km.layers[base]):
+        if mod := held_modifier(b):
+            out[mod].append([("key", base, p)])
+    for i, c in enumerate(km.combos):
+        if c.active_on(base) and (mod := held_modifier(c.binding)):
+            out[mod].append([("combo", base, i)])
+    return out
+
+
+def chord_key_ways(km, layout, name):
+    """Cheapest ways to press the non-modifier part of one chord event."""
+    if name in EMACS_KEYS:
+        return shortest(ways_for_key(km, layout, EMACS_KEYS[name]))
+    if len(name) != 1:
+        return []
+    ways = sorted((w for c in chord_chars(layout, name) for w in ways_for(km, layout, c)),
+                  key=lambda w: w.cost)
+    return shortest(ways)
+
+
+def chord_presses(km, layout, desc):
+    """Presses of one chord ('C-x C-f') as {press: share}, or None if unreachable.
+
+    A modifier held through consecutive events counts once. A modifier on
+    several keys (Ctrl on both thumbs) is split between them, skipping keys
+    the chord itself needs: C-SPC cannot take Ctrl from the Space key."""
+    sources = modifier_sources(km, OS_LAYOUTS[layout])
+    out = collections.Counter()
+    held = set()
+    for event in desc.split(" "):
+        m = EMACS_EVENT.fullmatch(EMACS_EVENT_ALIASES.get(event, event))
+        ways = chord_key_ways(km, layout, m.group(2)) if m else []
+        if not ways:
+            return None
+        mods = set(m.group(1).replace("-", ""))
+        for w in ways:
+            share = 1 / len(ways)
+            for p in w.presses:
+                out[p] += share
+            used = physical(km, w.presses)
+            for mod in mods - held:
+                srcs = [s for s in sources.get(EMACS_MODS.get(mod), []) if not physical(km, s) & used]
+                if not srcs:
+                    return None
+                for s in srcs:
+                    for p in s:
+                        out[p] += share / len(srcs)
+        held = mods
+    return out
+
+
+# ---------------------------------------------------------------- find
+
+def cmd_find(args):
+    km = load_keymap()
+    layouts = [OS_LAYOUT_ALIASES[args.layout]] if args.layout else list(OS_LAYOUTS)
+    chars = [ch for arg in args.chars for ch in ([" "] if arg == "SPC" else arg)]
+    for char in chars:
+        for layout in layouts:
+            base = km.layer_names[OS_LAYOUTS[layout]]
+            ways = ways_for(km, layout, char)
+            head = f"{CHAR_NAMES.get(char, char)}  в {layout} (слой {base})"
+            if not ways:
+                print(f"{head}: не набирается\n")
+                continue
+            print(f"{head}:")
+            for w in ways[: args.max]:
+                print("  " + "  →  ".join(w.steps))
+            if len(ways) > args.max:
+                print(f"  … ещё {len(ways) - args.max}, --max N чтобы увидеть")
+            print()
+
+
+# ---------------------------------------------------------------- index
+
+def compact_way(km, way):
+    """One way on one line: 'SPEC + Shift + A (левый мизинец, домашний ряд)'.
+
+    Keys are named by pos_label, in either input source."""
+    kind, layer, idx = way.presses[-1]
+    parts = []
+    if layer == SPEC:
+        parts.append("SPEC")
+    if way.cost > 1 + (layer == SPEC):
+        parts.append("Shift")
+    if kind == "combo":
+        caps = "+".join(pos_label(km, p) for p in km.combos[idx].positions)
+        parts.append(f"combo {caps}")
+    else:
+        hold = "держать " if way.steps[-1].startswith("удержание") else ""
+        parts.append(f"{hold}{pos_label(km, idx)} ({describe_pos(idx)})")
+    return " + ".join(parts)
+
+
+def index_rows(km):
+    """Rows of kbdtr-find per input source: every char the keymap can type and how.
+
+    A char the current source cannot type is still listed, with the source
+    that can."""
+    chars = sorted({c for table in CHARS.values() for pair in table.values() for c in pair
+                    if c.isprintable() or c == "\t"},
+                   key=lambda c: (c.isalnum(), c.isalpha(), c))
+    found = {layout: {} for layout in OS_LAYOUTS}
+    for layout in OS_LAYOUTS:
+        for ch in chars:
+            if ways := ways_for(km, layout, ch):
+                lines = dict.fromkeys(compact_way(km, w) for w in ways)
+                found[layout][ch] = "   |   ".join(list(lines)[:2])   # a third does not fit the line
+    index = {}
+    for layout in OS_LAYOUTS:
+        rows = []
+        for ch in chars:
+            how = found[layout].get(ch)
+            if how is None:
+                other = next((l for l in OS_LAYOUTS if l != layout and ch in found[l]), None)
+                if other is None:
+                    continue
+                how = f"только в {other}: {found[other][ch]}"
+            label = CHAR_NAMES.get(ch, ch)
+            name = "" if ch.isalnum() else unicodedata.name(ch, "").lower()
+            rows.append({"text": f"{label}    {name}" if name else label, "how": how, "char": ch})
+        index[layout] = rows
+    return index
+
+
+def write_index():
+    """out/index.json and out/layers.json for the current keymap."""
+    OUT.mkdir(exist_ok=True)
+    km = load_keymap()
+    INDEX.write_text(json.dumps(index_rows(km), ensure_ascii=False, indent=1))
+    counts = read_log(None)[0] if KLOG.exists() else {}
+    views = {l: layers_view(km, l, counts) for l in OS_LAYOUTS}
+    LAYERS.write_text(json.dumps({"colors": HEAT_COLORS, **views}, ensure_ascii=False, indent=1))
+    return INDEX, LAYERS
+
+
+def cmd_index(args):
+    for path in write_index():
+        print(path)
+
+
+# ---------------------------------------------------------------- layers
+
+CELL = 5   # text columns per key unit of config/eyelash_corne.json; labels fit in CELL - 1
+
+KEY_NAMES = {
+    "SPACE": "Spc", "ENTER": "Ent", "BSPC": "Bspc", "TAB": "Tab", "ESCAPE": "Esc", "ESC": "Esc",
+    "UP": "↑", "DOWN": "↓", "LEFT": "←", "RIGHT": "→", "DELETE": "Del", "INSERT": "Ins",
+    "PAGE_DOWN": "PgDn", "PAGE_UP": "PgUp", "PRINTSCREEN": "PrSc", "SCROLLLOCK": "ScrL",
+    "CAPS": "Caps", "C_MUTE": "Mute", "C_VOLUME_UP": "Vol+", "C_VOLUME_DOWN": "Vol-",
+    "shift": "Shft", "ctrl": "Ctrl", "alt": "Alt", "gui": "Cmd",
+}
+BEHAVIOR_NAMES = {"caps_word": "CapW", "sys_reset": "Rst", "bootloader": "Boot",
+                  "td_boot": "Boot", "td_bt_clr": "BTcl", "to_dvp": "→EN", "to_qwerty": "→RU"}
+POINTER_NAMES = {"LCLK": "LClk", "MCLK": "MClk", "RCLK": "RClk",
+                 "MOVE_UP": "M↑", "MOVE_DOWN": "M↓", "MOVE_LEFT": "M←", "MOVE_RIGHT": "M→"}
+LEGEND = "▽ как на слое ниже · вторая строка — при удержании · sk — до следующей клавиши · ×2 — двойной тап"
+
+
+def key_label(kc, layout):
+    """What a keycode types in `layout`, in CELL - 1 columns: 'й', '&', 'Spc', 'F3'.
+
+    The char as typed, not a keycap capital: SPEC sends both х and Х."""
+    ch = kc.char(layout)
+    if ch and ch.isprintable() and ch.strip():
+        return ch
+    if kc.modifier:
+        return KEY_NAMES[kc.modifier]
+    return KEY_NAMES.get(kc.key, kc.key.title()[:CELL - 1])
+
+
+def binding_labels(km, layout, b):
+    """(tap, hold) of a binding in `layout`; hold is '' for keys that do not hold."""
+    a = b.args
+    if b.behavior == "none":
+        return "", ""
+    if b.behavior == "trans":
+        return "▽", ""
+    if b.behavior == "kp" and a:
+        return key_label(parse_keycode(a[0]), layout), ""
+    if b.behavior == "mt" and len(a) == 2:
+        return key_label(parse_keycode(a[1]), layout), key_label(parse_keycode(a[0]), layout)
+    if b.behavior == "lt" and len(a) == 2:
+        return key_label(parse_keycode(a[1]), layout), km.layer_names[int(a[0])][:CELL - 1]
+    if b.behavior == "sk" and a:
+        return key_label(parse_keycode(a[0]), layout), "sk"
+    if b.behavior == "to" and a:
+        return "→" + km.layer_names[int(a[0])][:CELL - 2], ""
+    if b.behavior in ("mkp", "mmv") and a:
+        return POINTER_NAMES.get(a[0], a[0][:CELL - 1]), ""
+    if b.behavior == "bt" and a:
+        return {"BT_NXT": "BT→", "BT_PRV": "BT←", "BT_CLR": "BTcl"}.get(a[0], "BT"), ""
+    if b.behavior.startswith("td_"):
+        return BEHAVIOR_NAMES.get(b.behavior, b.behavior[3:CELL + 2]), "×2"
+    return BEHAVIOR_NAMES.get(b.behavior, b.behavior[:CELL - 1]), ""
+
+
+def layer_grid(km, layout, layer):
+    """One layer as text, keys where config/eyelash_corne.json puts them: per key
+    row a line of taps and a line of holds. Also the cells of the keys,
+    (line, col, width, pos): the CELL - 1 columns of the tap line a key takes."""
+    geometry = json.loads(LAYOUT_JSON.read_text())["layouts"]["default_layout"]["layout"]
+    rows = collections.defaultdict(list)
+    for p, g in enumerate(geometry):
+        if p in ABSENT:
+            continue
+        b = km.layers[layer][p]
+        labels = ("", "") if b.behavior == "trans" and layer == 0 else binding_labels(km, layout, b)
+        # Half up, not round(): banker's rounding spaces x.5 keys unevenly.
+        rows[g["row"]].append((int(g["x"] * CELL + 0.5), p, *labels))
+    lines, cells = [], []
+    for r in sorted(rows):
+        for i in (1, 2):
+            line = [" "] * (max(col for col, *_ in rows[r]) + CELL)
+            for col, p, *labels in rows[r]:
+                text = labels[i - 1]
+                start = col + (CELL - 1 - len(text)) // 2
+                line[start:start + len(text)] = text
+                if i == 1 and text:
+                    cells.append((len(lines), col, CELL - 1, p))
+            # Tap lines keep their trailing spaces: the last key's cell is tinted whole.
+            lines.append("".join(line) if i == 1 else "".join(line).rstrip())
+    while lines and not lines[-1].strip():
+        lines.pop()
+    return lines, cells
+
+
+def combos_lines(km, layout, layer, width):
+    """Combos active on `layer`: 'J+W →EN   O+N ?   …', wrapped at `width`.
+    Also their cells, (line, col, width, combo index)."""
+    lines, cells, line = [], [], "combo "
+    for i, c in enumerate(km.combos):
+        if not c.active_on(layer):
+            continue
+        tap, hold = binding_labels(km, layout, c.binding)
+        keys = "+".join(pos_label(km, p) for p in c.positions)
+        item = f"{keys} {tap}/{hold}" if hold else f"{keys} {tap}"
+        if len(line) + len(item) > width and line.strip() != "combo":
+            lines.append(line.rstrip())
+            line = "      "
+        cells.append((len(lines), len(line), len(item), i))
+        line += item + "   "
+    if cells:
+        lines.append(line.rstrip())
+    return lines, cells
+
+
+def layers_view(km, layout, counts):
+    """The layers that type in `layout` (its base, SPEC, BTWN) as one text, and
+    the cells of its keys and combos to tint by how often they are pressed:
+    [line, col, width, HEAT_COLORS index], from the `layout` rows of `counts`."""
+    keys, combos, _ = heat({k: n for k, n in counts.items() if k[1] == layout}, km)
+    vmax = collections.defaultdict(lambda: 1.0)
+    for (layer, _), v in [*keys.items(), *combos.items()]:
+        vmax[layer] = max(vmax[layer], v)
+    base = OS_LAYOUTS[layout]
+    lines, cells = [], []
+    for layer in [base] + [l for l in range(len(km.layers)) if l not in OS_LAYOUTS.values()]:
+        if lines:
+            lines.append("")
+        lines.append(km.layer_names[layer] + (f" · {layout}" if layer in (base, SPEC) else ""))
+        grid, grid_cells = layer_grid(km, layout, layer)
+        cells += [[len(lines) + l, c, w, bucket(keys[(layer, p)], vmax[layer])] for l, c, w, p in grid_cells]
+        lines += grid
+        clines, ccells = combos_lines(km, layout, layer, max(len(l.rstrip()) for l in grid))
+        cells += [[len(lines) + l, c, w, bucket(combos[(layer, i)], vmax[layer])] for l, c, w, i in ccells]
+        lines += clines
+    lines += ["", LEGEND]
+    return {"text": "\n".join(lines) + "\n", "cells": [c for c in cells if c[3] is not None]}
+
+
+def cmd_layers(args):
+    layouts = [OS_LAYOUT_ALIASES[args.layout]] if args.layout else list(OS_LAYOUTS)
+    km = load_keymap()
+    print("\n".join(layers_view(km, layout, {})["text"] for layout in layouts), end="")
+
+
+# ---------------------------------------------------------------- heatmap
+
+@dataclass
+class LogRow:
+    event: str        # 'char' (backspace is '\b'), 'chord', or 'skip'
+    value: str        # the char, the chord's key description, or why it is skipped
+    layout: str
+    interval: int     # ms since the previous logged command, -1 for the first one
+    relabeled: bool   # layout differs from the logged `layout` column
+
+
+# The same key again sooner than this is macOS key repeat (KeyRepeat 2, 30 ms,
+# here), not another press: no finger taps a key twice in 60 ms.
+REPEAT_MS = 60
+
+
+def iter_log(days=None):
+    """Rows of KLOG in order, with the macOS layout each one was typed in.
+
+    A letter decides the layout itself (Cyrillic is Russian – PC). Other rows
+    take the logged `layout` column where it is reliable
+    (LAYOUT_RELIABLE_SINCE_MS), else the layout of the last letter before them.
+    Key repeat while a key is held is skipped, so C-n held down is one press."""
+    since = (time.time() - days * 86400) * 1000 if days else 0
+    current = None
+    last = None    # (event, key) of the previous key row
+    with KLOG.open(newline="") as f:
+        for row in csv.DictReader(f):
+            try:
+                ts, interval = int(row["timestamp_ms"]), int(row["interval_ms"])
+            except ValueError:
+                continue
+            logged, key = row["layout"], row["key"]
+            if row["event"] == "layout":     # an input source switch, not a key
+                current = key if key in OS_LAYOUTS else current
+                continue
+            repeat = (row["event"], key) == last and 0 <= interval < REPEAT_MS
+            last = (row["event"], key)
+            if row["event"] == "backspace":
+                event, value = "char", "\b"
+            elif row["event"] == "char":
+                event, value = "char", {"COMMA": ",", "SPC": " ", "TAB": "\t", "RET": "\n"}.get(key, key)
+            else:
+                event, value = "chord", "," if key == "COMMA" else key
+            if event == "char" and len(value) == 1 and value.isalpha():
+                current = layout = "RussianWin" if "Ѐ" <= value <= "ӿ" else "ABC"
+            elif ts >= LAYOUT_RELIABLE_SINCE_MS and logged in OS_LAYOUTS:
+                layout = logged
+            else:
+                layout = current or logged
+            if ts < since:
+                continue
+            if repeat:
+                event, value = "skip", "автоповтор"
+            elif event == "chord" and NOT_KEYBOARD.search(value):
+                event, value = "skip", "мышь / меню"
+            elif layout not in OS_LAYOUTS:
+                event, value = "skip", f"layout {layout or '?'}"
+            yield LogRow(event, value, layout, interval, layout != logged)
+
+
+def read_log(days, chords=True):
+    counts = collections.Counter()    # (event, layout, value) -> n
+    skipped = collections.Counter()
+    relabeled = 0
+    for row in iter_log(days):
+        if row.event == "skip":
+            skipped[row.value] += 1
+        elif row.event == "chord" and not chords:
+            skipped["chord (--no-chords)"] += 1
+        else:
+            counts[(row.event, row.layout, row.value)] += 1
+            relabeled += row.relabeled
+    return counts, skipped, relabeled
+
+
+def occurrence(km, event, layout, value):
+    """Presses of one logged row as {press: share}, or None if the layout can't produce it."""
+    if event == "chord":
+        return chord_presses(km, layout, value)
+    ways = shortest(ways_for(km, layout, value))
+    if not ways:
+        return None
+    out = collections.Counter()
+    for w in ways:
+        for p in w.presses:
+            out[p] += 1 / len(ways)
+    return out
+
+
+def heat(counts, km):
+    keys = collections.Counter()      # (layer, pos) -> weight
+    combos = collections.Counter()    # (layer, combo index) -> weight
+    unreachable = collections.Counter()
+    for (event, layout, value), n in counts.items():
+        presses = occurrence(km, event, layout, value)
+        if presses is None:
+            unreachable[(event, layout, value)] += n
+            continue
+        for (kind, layer, idx), share in presses.items():
+            (keys if kind == "key" else combos)[(layer, idx)] += n * share
+    return keys, combos, unreachable
+
+
+# Tints of kbdtr-layers (h), light to dark.
+HEAT_COLORS = ["#fff7d6", "#ffeaa8", "#ffd47a", "#ffb35a", "#ff8c42", "#f2622e", "#d43a2a", "#a8201a"]
+
+
+def bucket(v, vmax):
+    """Colour index; sqrt scale relative to the busiest key of the same layer."""
+    if v <= 0 or vmax <= 0:
+        return None
+    return min(len(HEAT_COLORS) - 1, int(len(HEAT_COLORS) * math.sqrt(v / vmax)))
+
+
+def cmd_heatmap(args):
+    """The load as a report; kbdtr-layers (h) tints the keys with the same counts."""
+    km = load_keymap()
+    counts, skipped, relabeled = read_log(args.days, chords=not args.no_chords)
+    keys, combos, unreachable = heat(counts, km)
+    total = collections.Counter()
+    for (event, _, _), n in counts.items():
+        total[event] += n
+    print(f"Учтено {total['char']} символов и {total['chord']} сочетаний из {KLOG} (только Emacs, без eshell/term).")
+    if skipped:
+        print("Не учтено: " + ", ".join(f"{k} {v}" for k, v in skipped.most_common()))
+    if relabeled:
+        print(f"У {relabeled} строк раскладка взята по буквам, а не из колонки layout: "
+              f"до 2026-10-02 20:49 колонка отставала от переключений.")
+    per_layer = collections.Counter()
+    for (layer, _), v in keys.items():
+        per_layer[layer] += v
+    print("Нажатий по слоям: " + ", ".join(f"{km.layer_names[l]} {round(v)}" for l, v in sorted(per_layer.items())))
+
+    top = sorted(((v, ("key", l, p)) for (l, p), v in keys.items()), reverse=True)[:12]
+    print("\nСамые нагруженные клавиши")
+    print(f"{'Клавиша':<64} {'Слой':<7} {'Нажатий':>8}")
+    print("─" * 81)
+    for v, (_, l, p) in top:
+        print(f"{describe_pos(p) + ' [' + pos_label(km, p) + ']':<64} {km.layer_names[l]:<7} {round(v):>8}")
+    ctop = sorted(((v, k) for k, v in combos.items()), reverse=True)[:10]
+    if ctop:
+        print("\nCombos")
+        print(f"{'Combo':<22} {'Слой':<7} {'Нажатий':>8}")
+        print("─" * 39)
+        for v, (l, i) in ctop:
+            print(f"{km.combos[i].name:<22} {km.layer_names[l]:<7} {round(v):>8}")
+    for event, title in (("char", "Символы, которых раскладка не даёт (другая клавиатура или ввод не с клавиш)"),
+                         ("chord", "Сочетания, для которых на раскладке нет клавиши")):
+        items = [(n, l, v) for (e, l, v), n in unreachable.most_common() if e == event][:15]
+        if items:
+            print(f"\n{title}:")
+            print("  " + ", ".join(f"{CHAR_NAMES.get(v, v)} ({l}) {n}" for n, l, v in items))
+
+
+# ---------------------------------------------------------------- bigrams
+
+BIGRAM_GROUPS = ["та же клавиша", "тот же палец", "та же рука", "разные руки", "через SPEC / Shift / combo"]
+
+
+def finger_label(km, way):
+    """Who presses the char: 'левый указательный', 'combo_minus', with +SPEC / +Shift."""
+    kind, layer, idx = way.presses[-1]
+    if kind == "combo":
+        label = km.combos[idx].name
+    else:
+        hand, finger, where = pos_info(idx)
+        label = f"{hand} {finger}" if hand else where
+    via_spec = layer == SPEC
+    if via_spec:
+        label += " +SPEC"
+    if way.cost > 1 + via_spec:
+        label += " +Shift"
+    return label
+
+
+def bigram_group(a, b):
+    """How two consecutive chars sit under the fingers (a, b are their Ways)."""
+    if a.cost > 1 or b.cost > 1 or a.presses[-1][0] == "combo" or b.presses[-1][0] == "combo":
+        return "через SPEC / Shift / combo"
+    pa, pb = a.presses[-1][2], b.presses[-1][2]
+    if pa == pb:
+        return "та же клавиша"
+    (ha, fa, _), (hb, fb, _) = pos_info(pa), pos_info(pb)
+    if ha is None or ha != hb:
+        return "разные руки"
+    if fa.split(" (")[0] == fb.split(" (")[0]:   # the inner index column is the index finger
+        return "тот же палец"
+    return "та же рука"
+
+
+def cmd_bigrams(args):
+    km = load_keymap()
+    first_way = {}
+
+    def way(layout, ch):
+        if (layout, ch) not in first_way:
+            ways = shortest(ways_for(km, layout, ch))
+            first_way[(layout, ch)] = ways[0] if ways else None
+        return first_way[(layout, ch)]
+
+    pairs = collections.defaultdict(list)   # (layout, a, b) -> intervals, ms
+    prev = None
+    for row in iter_log(args.days):
+        if (row.event == "char" and prev is not None and prev.event == "char"
+                and "\b" not in (prev.value, row.value) and prev.layout == row.layout
+                and 0 < row.interval <= args.max_ms):
+            pairs[(row.layout, prev.value, row.value)].append(row.interval)
+        prev = row
+
+    groups = collections.defaultdict(list)
+    slow = []
+    for (layout, a, b), intervals in pairs.items():
+        wa, wb = way(layout, a), way(layout, b)
+        if wa is None or wb is None:
+            continue
+        group = bigram_group(wa, wb)
+        groups[group].extend(intervals)
+        if len(intervals) >= args.min:
+            slow.append((statistics.median(intervals), len(intervals), layout, a, b, group, wa, wb))
+
+    print(f"Пары символов подряд с интервалом до {args.max_ms} мс: {sum(map(len, groups.values()))} "
+          f"из {KLOG}.")
+    print("Символ с несколькими способами набора взят по первому из самых коротких.\n")
+    print(f"{'Как стоят клавиши':<28} {'Пар':>8} {'Медиана, мс':>12}")
+    print("─" * 50)
+    for group in BIGRAM_GROUPS:
+        if groups.get(group):
+            print(f"{group:<28} {len(groups[group]):>8} {statistics.median(groups[group]):>12.0f}")
+
+    print(f"\nСамые медленные пары (встретились не меньше {args.min} раз)")
+    print(f"{'Пара':<9} {'Раскладка':<11} {'Медиана':>7} {'Раз':>6}  {'Как стоят клавиши':<27} Пальцы")
+    print("─" * 104)
+    for med, n, layout, a, b, group, wa, wb in sorted(slow, key=lambda r: (r[0], r[1]), reverse=True)[: args.top]:
+        pair = f"{CHAR_NAMES.get(a, a)} {CHAR_NAMES.get(b, b)}"
+        print(f"{pair:<9} {layout:<11} {med:>7.0f} {n:>6}  {group:<27} "
+              f"{finger_label(km, wa)} → {finger_label(km, wb)}")
+
+
+# ---------------------------------------------------------------- fetch / flash
+
+def git(*a):
+    return subprocess.run(["git", "-C", str(REPO), *a], capture_output=True, text=True, check=True).stdout.strip()
+
+
+def gh(*a, check=True):
+    return subprocess.run(["gh", *a], cwd=REPO, capture_output=True, text=True, check=check).stdout.strip()
+
+
+def cmd_fetch(args):
+    # The repo is a fork. When gh writes to a terminal it also sees the parent
+    # repo and refuses to choose; GH_REPO names it for every gh call below.
+    repo = re.search(r"github\.com[:/](.+?)(?:\.git)?$", git("remote", "get-url", "origin")).group(1)
+    os.environ["GH_REPO"] = repo
+    # The newest commit CI builds: build.yml ignores keymap-drawer/**, which is
+    # all the "[Draw]" commit after every keymap push touches.
+    sha = git("log", "-1", "--format=%H", "--", ".", ":!keymap-drawer")
+    short = sha[:7]
+    dest = FIRMWARE / short
+    if list(dest.glob("*.uf2")):
+        print(f"Уже скачано: {dest}")
+        return dest
+    if git("status", "--porcelain", "--untracked-files=no", "--", "config", "boards", "build.yaml"):
+        print("Внимание: в config/ boards/ build.yaml есть незакоммиченные правки — их в сборке нет.")
+    if not git("branch", "-r", "--contains", sha):
+        sys.exit(f"{short} не запушен — CI его не собирал. Сначала git push.")
+
+    def run_id():
+        out = gh("run", "list", "-w", "build.yml", "--commit", sha, "-L", "1",
+                 "--json", "databaseId", "-q", ".[0].databaseId")
+        return out or None
+
+    rid = run_id()
+    if not rid:
+        branch = git("rev-parse", "--abbrev-ref", "HEAD")
+        print(f"Сборки для {short} нет, запускаю build.yml на {branch}")
+        gh("workflow", "run", "build.yml", "--ref", branch)
+        for _ in range(30):
+            time.sleep(3)
+            if rid := run_id():
+                break
+        else:
+            sys.exit(f"Сборка не появилась за 90 с, проверь `gh run list -R {repo}`.")
+    print(f"Жду сборку {rid} для {short}…", flush=True)
+    # `gh run watch` also exits non-zero when the connection to GitHub drops,
+    # so the verdict comes from the run itself.
+    for _ in range(30):
+        subprocess.run(["gh", "run", "watch", rid, "--exit-status", "--interval", "10"], cwd=REPO)
+        state = gh("run", "view", rid, "--json", "status,conclusion", "-q", '.status + " " + .conclusion',
+                   check=False)
+        if state == "completed success":
+            break
+        if state.startswith("completed"):
+            sys.exit(f"Сборка упала ({state.split()[-1]}): gh run view {rid} -R {repo} --log-failed")
+        print("Связь с GitHub оборвалась, жду дальше…", flush=True)
+        time.sleep(10)
+    else:
+        sys.exit(f"Не дождался сборки {rid}: gh run view {rid} -R {repo}")
+    dest.mkdir(parents=True, exist_ok=True)
+    for _ in range(3):
+        for f in dest.glob("*.uf2"):     # gh run download refuses to overwrite
+            f.unlink()
+        if subprocess.run(["gh", "run", "download", rid, "-n", "firmware", "-D", str(dest)],
+                          cwd=REPO).returncode == 0:
+            break
+        print("Скачать не вышло, пробую ещё раз…", flush=True)
+        time.sleep(5)
+    else:
+        sys.exit(f"Не скачалось: gh run download {rid} -R {repo} -n firmware -D {dest}")
+    for f in sorted(dest.glob("*.uf2")):
+        print(f"  {f}")
+    if old := prune_builds(dest):
+        print("Убрал старые сборки: " + ", ".join(old))
+    return dest
+
+
+def prune_builds(keep):
+    """Remove every build in firmware/ but `keep`: flash always takes the newest."""
+    old = [d for d in FIRMWARE.iterdir() if d != keep and d.is_dir() and re.fullmatch(r"[0-9a-f]{7}", d.name)]
+    for d in old:
+        shutil.rmtree(d)
+    return sorted(d.name for d in old)
+
+
+def uf2_volume():
+    # macOS mounts the bootloader drive in /Volumes; on Linux udisks2 does it in
+    # /run/media/$USER (Fedora, Arch) or /media/$USER (Debian, Ubuntu).
+    vols = [v for pattern in ("/Volumes/*", "/run/media/*/*", "/media/*/*")
+            for v in glob.glob(pattern) if os.path.exists(os.path.join(v, "INFO_UF2.TXT"))]
+    return vols[0] if vols else None
+
+
+def cmd_flash(args):
+    dest = cmd_fetch(args)
+    files = [f for f in dest.glob("*.uf2") if f"_{args.side}" in f.name]
+    if len(files) != 1:
+        sys.exit(f"Не нашёл ровно одну прошивку для {args.side} в {dest}: {[f.name for f in files]}")
+    fw = files[0]
+    if not (vol := uf2_volume()):
+        key = "левый указательный" if args.side == "left" else "правый указательный"
+        print(f"Подключи {args.side} половину по USB и войди в bootloader: SPEC → BTWN (&to 3), "
+              f"двойной тап &td_boot ({key}, домашний ряд).")
+        print("Жду диск с INFO_UF2.TXT…")
+        for _ in range(240):
+            time.sleep(0.5)
+            if vol := uf2_volume():
+                break
+        else:
+            sys.exit("Диск bootloader не появился за 2 минуты.")
+    print(f"{fw.name} → {vol}")
+    # The board reboots as soon as the copy finishes; cp may report an error then.
+    # -X keeps macOS from writing a ._ file next to the firmware; GNU cp has no -X.
+    cp = ["cp", "-X"] if sys.platform == "darwin" else ["cp"]
+    subprocess.run([*cp, str(fw), vol], check=False)
+    for _ in range(20):
+        # INFO_UF2.TXT, not the mount point: on Linux the mount point can outlive
+        # the drive for a while.
+        if not os.path.exists(os.path.join(vol, "INFO_UF2.TXT")):
+            print(f"Готово: половина перезагрузилась. На экране должно быть {dest.name}.")
+            print("Шпаргалки обновлены: " + ", ".join(map(str, write_index())))
+            return
+        time.sleep(0.5)
+    print(f"Диск {vol} не исчез — проверь, прошилось ли.")
+
+
+# ---------------------------------------------------------------- main
+
+def main():
+    ap = argparse.ArgumentParser(prog="kb", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(required=True)
+
+    p = sub.add_parser("find", help="как набрать символ")
+    p.add_argument("chars", nargs="+", help="символы; 'SPC' для пробела")
+    p.add_argument("--layout", choices=sorted(OS_LAYOUT_ALIASES), help="только одна раскладка ОС")
+    p.add_argument("--max", type=int, default=4, help="сколько способов показывать")
+    p.set_defaults(func=cmd_find)
+
+    p = sub.add_parser("layers", help="слои текстом, как они печатают в раскладке ОС")
+    p.add_argument("--layout", choices=sorted(OS_LAYOUT_ALIASES), help="только одна раскладка ОС")
+    p.set_defaults(func=cmd_layers)
+
+    p = sub.add_parser("index", help="данные для kbdtr.el: как набрать символ и слои текстом")
+    p.set_defaults(func=cmd_index)
+
+    p = sub.add_parser("heatmap", help="самые нагруженные клавиши и combos по ~/.emacs.d/keystroke-log.csv")
+    p.add_argument("--days", type=float, help="только последние N дней")
+    p.add_argument("--no-chords", action="store_true", help="без сочетаний (C-x, M-f…), только символы")
+    p.set_defaults(func=cmd_heatmap)
+
+    p = sub.add_parser("bigrams", help="самые медленные пары символов подряд")
+    p.add_argument("--days", type=float, help="только последние N дней")
+    p.add_argument("--min", type=int, default=30, help="пара должна встретиться не меньше N раз")
+    p.add_argument("--top", type=int, default=20, help="сколько пар показать")
+    p.add_argument("--max-ms", type=int, default=1000, help="интервал длиннее — пауза, не печать")
+    p.set_defaults(func=cmd_bigrams)
+
+    p = sub.add_parser("fetch", help="скачать прошивку CI для HEAD")
+    p.set_defaults(func=cmd_fetch)
+
+    p = sub.add_parser("flash", help="прошить половину")
+    p.add_argument("side", choices=["left", "right"])
+    p.set_defaults(func=cmd_flash)
+
+    args = ap.parse_args()
+    args.func(args)
+
+
+if __name__ == "__main__":
+    main()
