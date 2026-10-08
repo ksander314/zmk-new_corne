@@ -141,6 +141,12 @@ index key of the half being flashed — `U` on the left half, `H` on the right. 
 by what the DVP layer prints on them. Each half must be flashed separately, over its own USB
 cable.
 
+### kbdtr
+
+[`kbdtr/`](kbdtr/) is the console for this keyboard: `kbdtr/kb` tells how to type a char,
+prints the layers, measures typing by the Emacs keystroke log, and fetches and flashes the CI
+builds; `kbdtr/kbdtr.el` shows the same in Emacs. See [`kbdtr/README.md`](kbdtr/README.md).
+
 ### ZMK version
 
 Pinned to `v0.3.0` in `config/west.yml` and `.github/workflows/build.yml`. The `main` branch requires Zephyr 4.1 HWMv2 migration which the eyelash_corne board doesn't support yet.

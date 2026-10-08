@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """kb — the command-line half of kbdtr, the console of the eyelash_corne keyboard
-whose keymap lives in ~/src/zmk-new_corne; kbdtr.el is the Emacs half.
+whose keymap is the repo kb lives in; kbdtr.el is the Emacs half.
 
   kb find CHARS [--layout abc|ru]   how to type a character
   kb layers [--layout abc|ru]       the layers as text, as they type in an input source
@@ -29,11 +29,12 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
-REPO = Path(os.environ.get("KB_REPO", "~/src/zmk-new_corne")).expanduser()
+HOME = Path(__file__).resolve().parent
+# kb lives in the kbdtr/ directory of the keymap repo.
+REPO = Path(os.environ.get("KB_REPO", HOME.parent)).expanduser()
 KEYMAP = REPO / "config/eyelash_corne.keymap"
 LAYOUT_JSON = REPO / "config/eyelash_corne.json"
 KLOG = Path(os.environ.get("KB_KLOG", "~/.emacs.d/keystroke-log.csv")).expanduser()
-HOME = Path(__file__).resolve().parent
 OUT = HOME / "out"
 FIRMWARE = HOME / "firmware"
 # How to type each char, read by kbdtr-find (kbdtr.el).

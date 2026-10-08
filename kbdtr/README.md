@@ -1,6 +1,6 @@
 # kbdtr
 
-A console for my eyelash_corne keyboard, whose ZMK keymap lives in `~/src/zmk-new_corne`.
+A console for my eyelash_corne keyboard, whose ZMK keymap is this repo.
 It does three jobs:
 
 1. **Look up** how to type a char and see the layers: in Emacs (`kbdtr.el`) or with `./kb`.
@@ -8,12 +8,13 @@ It does three jobs:
    whether a keymap change helped.
 3. **Ship** firmware: wait for the CI build and flash a half with one command.
 
-Not here: the keymap is edited by hand in `~/src/zmk-new_corne`, and CI there builds the
-firmware and draws `keymap-drawer/eyelash_corne.svg`.
+Not here: the keymap is edited by hand in `../config/eyelash_corne.keymap`, and CI builds
+the firmware and draws `../keymap-drawer/eyelash_corne.svg`.
 
 ## Emacs
 
-`~/.emacs.d/init.el` loads `kbdtr.el` when it exists; it works on macOS and Linux alike.
+`~/.emacs.d/init.el` loads `kbdtr.el` from the repo in `my/zmk-repo` (`~/src/zmk-new_corne`,
+or `$ZMK_REPO`) and warns when it is not there; it works on macOS and Linux alike.
 
 - `C-c K` (`kbdtr-find`): type a char or its Unicode name (`&`, `brace`, `э`) to see how to
   type it in the current input source; Enter copies it, `C-u` asks about the other source.
@@ -37,4 +38,5 @@ last letter before point.
 ```
 
 Keys are named by what the DVP layer prints on them (`O`, `N`), in either input source.
-Needs `python3` and `gh`, nothing else. Paths can be overridden with `KB_REPO` and `KB_KLOG`.
+Needs `python3` and `gh`, nothing else. `KB_REPO` overrides the keymap repo (by default the
+one kb lives in) and `KB_KLOG` the keystroke log.
