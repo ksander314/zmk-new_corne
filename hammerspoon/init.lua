@@ -126,3 +126,128 @@ hs.hotkey.bind(windowMods, "down", function()
     local win = hs.window.focusedWindow()
     if win then win:moveOneScreenSouth(false, true) end
 end)
+
+-- Focus: the same keys without Shift.
+
+local function currentScreen()
+    local win = hs.window.focusedWindow()
+    return win and win:screen() or hs.mouse.getCurrentScreen()
+end
+
+-- Hammerspoon's window lists miss Emacs (its app shows up there with pid -1),
+-- but the focused window is always known: remember the last one of every monitor.
+local lastFocused = {} -- screen id -> hs.window
+
+-- The window still exists and lies on the Desktop now shown on its monitor.
+local function onShownDesktop(w)
+    local ok, shown = pcall(function()
+        local active = hs.spaces.activeSpaceOnScreen(w:screen())
+        for _, space in ipairs(hs.spaces.windowSpaces(w) or {}) do
+            if space == active then return true end
+        end
+        return false
+    end)
+    return ok and shown
+end
+
+-- Global, or the garbage collector stops the timer.
+focusTracker = hs.timer.doEvery(0.5, function()
+    local w = hs.window.focusedWindow()
+    if w and w:isStandard() then lastFocused[w:screen():id()] = w end
+end)
+
+-- focus() from a hotkey sometimes leaves the old app in front (seen leaving Claude),
+-- so check it took, and if not, activate the app the way the Dock does.
+local function focusWindow(w)
+    w:focus()
+    hs.timer.doAfter(0.15, function()
+        local now = hs.window.focusedWindow()
+        if now and now:id() == w:id() then return end
+        hs.application.launchOrFocusByBundleID(w:application():bundleID())
+        w:focus()
+        hs.timer.doAfter(0.15, function()
+            local after = hs.window.focusedWindow()
+            logMsg("focus retry " .. w:application():name() .. ": "
+                .. ((after and after:id() == w:id()) and "ok" or "still " .. (after and after:application():name() or "nothing")))
+        end)
+    end)
+end
+
+-- Windows of a screen in a fixed order (left to right, top to bottom, then by id),
+-- so the cycle does not depend on which window was focused last.
+-- A cycle, not "the window to the left": maximized windows lie on top of each other.
+local function windowsOn(screen)
+    local wins, frames = {}, {}
+    for _, w in ipairs(hs.window.visibleWindows()) do
+        if w:isStandard() and w:screen():id() == screen:id() then
+            table.insert(wins, w)
+            frames[w:id()] = w:frame()
+        end
+    end
+    local remembered = lastFocused[screen:id()]
+    if remembered and onShownDesktop(remembered) and not frames[remembered:id()]
+        and remembered:screen():id() == screen:id() then
+        table.insert(wins, remembered)
+        frames[remembered:id()] = remembered:frame()
+    end
+    table.sort(wins, function(a, b)
+        local fa, fb = frames[a:id()], frames[b:id()]
+        if fa.x ~= fb.x then return fa.x < fb.x end
+        if fa.y ~= fb.y then return fa.y < fb.y end
+        return a:id() < b:id()
+    end)
+    return wins
+end
+
+local function focusNextWindow(step)
+    local wins = windowsOn(currentScreen())
+    if #wins == 0 then return end
+    local win = hs.window.focusedWindow()
+    for i, w in ipairs(wins) do
+        if win and w:id() == win:id() then
+            focusWindow(wins[(i - 1 + step) % #wins + 1])
+            return
+        end
+    end
+    focusWindow(wins[1])
+end
+
+-- The monitors are stacked, so up is the top one (the HP) and down the bottom one
+-- (the laptop), wherever the focus is now.
+local function screenAtEdge(top)
+    local best
+    for _, s in ipairs(hs.screen.allScreens()) do
+        local y, bestY = s:frame().y, best and best:frame().y
+        if not best or (top and y < bestY) or (not top and y > bestY) then best = s end
+    end
+    return best
+end
+
+local function focusScreen(screen)
+    local from = hs.window.focusedWindow()
+    -- Back to where you were on that monitor, else its topmost window.
+    local target = lastFocused[screen:id()]
+    if not (target and onShownDesktop(target) and target:screen():id() == screen:id()) then
+        target = nil
+        for _, w in ipairs(hs.window.orderedWindows()) do
+            if w:isStandard() and w:screen():id() == screen:id() then
+                target = w
+                break
+            end
+        end
+    end
+    logMsg("focus screen " .. screen:name() .. " from "
+        .. (from and (from:application():name() .. " on " .. from:screen():name()) or "nothing")
+        .. " to " .. (target and target:application():name() or "nothing"))
+    if target then focusWindow(target) end
+    -- The pointer goes too, so that ctrl-left / ctrl-right turn the Desktops of this monitor.
+    if hs.mouse.getCurrentScreen():id() ~= screen:id() then
+        hs.mouse.absolutePosition(screen:frame().center)
+    end
+end
+
+local focusMods = {"ctrl", "alt"}
+hs.hotkey.bind(focusMods, "right", function() focusNextWindow(1) end)
+hs.hotkey.bind(focusMods, "left", function() focusNextWindow(-1) end)
+hs.hotkey.bind(focusMods, "up", function() focusScreen(screenAtEdge(true)) end)
+hs.hotkey.bind(focusMods, "down", function() focusScreen(screenAtEdge(false)) end)
