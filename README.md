@@ -55,6 +55,8 @@ ln -sf "$PWD/hammerspoon/init.lua" ~/.hammerspoon/init.lua
 
 [`hammerspoon/init.lua`](hammerspoon/init.lua) sets the input source on `Hyper+1` / `Hyper+2` and reports every switch to Emacs (`my/klog-set-layout`, when Emacs defines it).
 
+It also moves windows with `Ctrl+Alt+Shift` + the 5-way: `←` / `→` carries the focused window to the neighbouring Desktop (it goes once the keys are released), `↑` / `↓` to the monitor above or below.
+
 #### Linux (GNOME)
 
 On GNOME (especially Wayland + IBus) the *idempotent* approach used on macOS is
