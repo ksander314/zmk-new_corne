@@ -105,7 +105,7 @@ layers:
   - '{'
   - '}'
   - Sft+9
-  - {t: '$$mdi:transfer$$', type: trans}
+  - F16
   - {t: '=', s: +}
   - Sft+8
   - Sft+0
@@ -134,7 +134,7 @@ layers:
   - PgDn
   - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - {t: '$$mdi:transfer$$', type: trans}
-  - {t: '$$mdi:transfer$$', type: trans}
+  - F17
   - {t: '$$mdi:apple-keyboard-shift$$', h: '$$mdi:gesture-tap-hold$$'}
   - Sft+3
   - {t: /, s: '?'}
