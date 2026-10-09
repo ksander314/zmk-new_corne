@@ -251,3 +251,22 @@ hs.hotkey.bind(focusMods, "right", function() focusNextWindow(1) end)
 hs.hotkey.bind(focusMods, "left", function() focusNextWindow(-1) end)
 hs.hotkey.bind(focusMods, "up", function() focusScreen(screenAtEdge(true)) end)
 hs.hotkey.bind(focusMods, "down", function() focusScreen(screenAtEdge(false)) end)
+
+-- A monitor that comes back (after its sleep, for one) gets its Desktops rebuilt,
+-- and the Dock then stops switching to some of them: ctrl-4 did nothing on the HP
+-- until `killall Dock`. So restart the Dock once a monitor is back.
+local screenCount = #hs.screen.allScreens()
+local dockRestart
+-- Global, or the garbage collector stops the watcher.
+screenWatcher = hs.screen.watcher.new(function()
+    local n = #hs.screen.allScreens()
+    if n > screenCount then
+        if dockRestart then dockRestart:stop() end
+        -- Let macOS finish rebuilding the Desktops first.
+        dockRestart = hs.timer.doAfter(5, function()
+            logMsg("monitor back: restarting the Dock")
+            hs.task.new("/usr/bin/killall", nil, {"Dock"}):start()
+        end)
+    end
+    screenCount = n
+end):start()
