@@ -170,8 +170,16 @@ local function currentScreen()
 end
 
 -- Hammerspoon's window lists miss Emacs (its app shows up there with pid -1),
--- but the focused window is always known: remember the last one of every monitor.
+-- but the focused window is always known: remember every window that had the focus,
+-- and the last one of every monitor.
 local lastFocused = {} -- screen id -> hs.window
+local seen = {}        -- window id -> hs.window
+
+-- The Desktops a window lies on; none once it is closed.
+local function spacesOf(w)
+    local ok, spaces = pcall(hs.spaces.windowSpaces, w)
+    return ok and spaces or {}
+end
 
 -- The window still exists and lies on the Desktop now shown on its monitor.
 local function onShownDesktop(w)
@@ -188,7 +196,10 @@ end
 -- Global, or the garbage collector stops the timer.
 focusTracker = hs.timer.doEvery(0.5, function()
     local w = hs.window.focusedWindow()
-    if w and w:isStandard() then lastFocused[w:screen():id()] = w end
+    if w and w:isStandard() then
+        lastFocused[w:screen():id()] = w
+        seen[w:id()] = w
+    end
 end)
 
 -- focus() from a hotkey sometimes leaves the old app in front (seen leaving Claude),
@@ -219,11 +230,15 @@ local function windowsOn(screen)
             frames[w:id()] = w:frame()
         end
     end
-    local remembered = lastFocused[screen:id()]
-    if remembered and onShownDesktop(remembered) and not frames[remembered:id()]
-        and remembered:screen():id() == screen:id() then
-        table.insert(wins, remembered)
-        frames[remembered:id()] = remembered:frame()
+    -- Plus the windows the lists miss (Emacs) that had the focus; forget closed ones.
+    for id, w in pairs(seen) do
+        if #spacesOf(w) == 0 then
+            seen[id] = nil
+        elseif not frames[id] and not w:isMinimized() and onShownDesktop(w)
+            and w:screen():id() == screen:id() then
+            table.insert(wins, w)
+            frames[id] = w:frame()
+        end
     end
     table.sort(wins, function(a, b)
         local fa, fb = frames[a:id()], frames[b:id()]
