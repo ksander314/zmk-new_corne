@@ -116,6 +116,10 @@ end
 local windowMods = {"ctrl", "alt", "shift"}
 hs.hotkey.bind(windowMods, "left", function() carryWindowToSpace("left") end)
 hs.hotkey.bind(windowMods, "right", function() carryWindowToSpace("right") end)
+-- The keyboard sends F18 / F19 for the same (SPEC + 5-way ← / →): no modifiers
+-- to wait for, so the window goes at once. F14 / F15 are screen brightness on macOS.
+hs.hotkey.bind({}, "f18", function() carryWindowToSpace("left") end)
+hs.hotkey.bind({}, "f19", function() carryWindowToSpace("right") end)
 
 -- The HP monitor stands above the laptop.
 hs.hotkey.bind(windowMods, "up", function()
