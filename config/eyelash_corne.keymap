@@ -349,9 +349,9 @@
         layer_2 {
             display-name = "SPEC";
             bindings = <
-&none                       &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &trans          &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &none
+&none                       &mt GRAVE LS(NUMBER_7)  &kp LEFT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE  &kp LS(NUMBER_9)          &kp F16         &kp EQUAL         &kp LS(NUMBER_8)  &kp LS(NUMBER_0)  &kp LS(EQUAL)    &kp RIGHT_BRACKET    &none  // 5-way ↑ → F16: Hammerspoon moves the window to the monitor above
 &none                       &kp NUMBER_7            &kp NUMBER_5    &kp NUMBER_3        &kp NUMBER_1         &kp NUMBER_9      &kp F18  &trans  &kp F19  &kp NUMBER_0      &kp NUMBER_2      &kp NUMBER_4      &kp NUMBER_6     &mt APOS NUMBER_8  &none  // 5-way ← / → → F18 / F19: Hammerspoon carries the window to the next Desktop
-&none                       &kp GRAVE               &kp TAB         &to 3               &kp PAGE_DOWN        &sk LEFT_SHIFT  &trans  &trans          &sk RIGHT_SHIFT   &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &none
+&none                       &kp GRAVE               &kp TAB         &to 3               &kp PAGE_DOWN        &sk LEFT_SHIFT  &trans  &kp F17         &sk RIGHT_SHIFT   &kp LS(NUMBER_3)  &kp SLASH         &kp LS(NUMBER_2) &kp BACKSLASH      &none  // 5-way ↓ → F17: the monitor below
                                                                     &kp PRINTSCREEN     &none               &kp ESCAPE                                 &kp INSERT       &kp DELETE        &kp RALT
             >;
 

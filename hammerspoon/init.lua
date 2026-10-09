@@ -122,14 +122,19 @@ hs.hotkey.bind({}, "f18", function() carryWindowToSpace("left") end)
 hs.hotkey.bind({}, "f19", function() carryWindowToSpace("right") end)
 
 -- The HP monitor stands above the laptop.
-hs.hotkey.bind(windowMods, "up", function()
+local function moveWindowUp()
     local win = hs.window.focusedWindow()
     if win then win:moveOneScreenNorth(false, true) end
-end)
-hs.hotkey.bind(windowMods, "down", function()
+end
+local function moveWindowDown()
     local win = hs.window.focusedWindow()
     if win then win:moveOneScreenSouth(false, true) end
-end)
+end
+hs.hotkey.bind(windowMods, "up", moveWindowUp)
+hs.hotkey.bind(windowMods, "down", moveWindowDown)
+-- And F16 / F17 from the keyboard (SPEC + 5-way ↑ / ↓).
+hs.hotkey.bind({}, "f16", moveWindowUp)
+hs.hotkey.bind({}, "f17", moveWindowDown)
 
 -- Focus: the same keys without Shift.
 
