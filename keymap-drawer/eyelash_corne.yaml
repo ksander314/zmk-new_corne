@@ -118,9 +118,9 @@ layers:
   - '3'
   - '1'
   - '9'
+  - F18
   - {t: '$$mdi:transfer$$', type: trans}
-  - {t: '$$mdi:transfer$$', type: trans}
-  - {t: '$$mdi:transfer$$', type: trans}
+  - F19
   - '0'
   - '2'
   - '4'
