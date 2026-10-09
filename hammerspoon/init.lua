@@ -54,13 +54,31 @@ local notTitleBar = {
 
 local function titleBarPoint(win)
     local f = win:frame()
-    for _, fx in ipairs({0.5, 0.35, 0.65, 0.8, 0.2}) do
-        local p = hs.geometry.point(f.x + f.w * fx, f.y + 5)
+    -- Right of the window buttons first: there both Emacs and Chrome drag the window.
+    for _, x in ipairs({f.x + 120, f.x + f.w * 0.5, f.x + f.w * 0.35, f.x + f.w * 0.65, f.x + f.w * 0.8}) do
+        local p = hs.geometry.point(x, f.y + 12)
         local el = hs.axuielement.systemElementAtPosition(p)
         local role = el and el:attributeValue("AXRole")
         if role and not notTitleBar[role] then return p end
     end
 end
+
+-- Emacs moves only under a drag that looks like a real one: the same event number
+-- on press, moves and release, pressure, and the delta of every move.
+local mouseEventNumber = 1000
+local function mouseEvent(kind, p, dx)
+    local e = ev.newMouseEvent(kind, p)
+    e:setProperty(ev.properties.mouseEventClickState, 1)
+    e:setProperty(ev.properties.mouseEventNumber, mouseEventNumber)
+    e:setProperty(ev.properties.mouseEventPressure, kind == ev.types.leftMouseUp and 0 or 1)
+    if dx then
+        e:setProperty(ev.properties.mouseEventDeltaX, dx)
+        e:setProperty(ev.properties.mouseEventDeltaY, 0)
+    end
+    return e
+end
+
+local carryTimer -- the step of a carry in flight, kept here so the GC does not stop it
 
 local function modifiersUp()
     local m = hs.eventtap.checkKeyboardModifiers()
@@ -96,17 +114,25 @@ local function carryWindowToSpace(dir)
             logMsg("carry " .. dir .. ": no title bar to hold")
             return
         end
-        local held = hs.geometry.point(grab.x + 6, grab.y)
+        local frame = win:frame()
         local back = hs.mouse.absolutePosition()
+        mouseEventNumber = mouseEventNumber + 1
         hs.mouse.absolutePosition(grab)
-        ev.newMouseEvent(ev.types.leftMouseDown, grab):post()
-        hs.timer.doAfter(0.08, function()
-            ev.newMouseEvent(ev.types.leftMouseDragged, held):post()
-            hs.timer.doAfter(0.08, function()
+        mouseEvent(ev.types.leftMouseDown, grab):post()
+        -- Drag 30 px in steps, switch the Desktop, let go, put the window back where it was.
+        local step = 0
+        carryTimer = hs.timer.doEvery(0.03, function()
+            step = step + 1
+            mouseEvent(ev.types.leftMouseDragged, hs.geometry.point(grab.x + 5 * step, grab.y), 5):post()
+            if step < 6 then return end
+            carryTimer:stop()
+            carryTimer = hs.timer.doAfter(0.15, function()
                 hs.eventtap.keyStroke({"ctrl", "fn"}, dir, 20000)
-                hs.timer.doAfter(0.7, function()
-                    ev.newMouseEvent(ev.types.leftMouseUp, held):post()
+                carryTimer = hs.timer.doAfter(0.7, function()
+                    mouseEvent(ev.types.leftMouseUp, hs.geometry.point(grab.x + 30, grab.y)):post()
                     hs.mouse.absolutePosition(back)
+                    win:setFrame(frame)
+                    carryTimer = nil
                 end)
             end)
         end)
